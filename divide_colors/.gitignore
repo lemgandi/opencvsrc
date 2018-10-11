@@ -1,0 +1,8 @@
+# Ignore generated files
+divide_colors
+CMakeCache.txt
+CMakeFiles/**
+cmake_install.cmake
+Makefile
+*~
+

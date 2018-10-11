@@ -1,0 +1,7 @@
+cmake_minimum_required( VERSION 2.8 )
+project( display_image )
+set(CMAKE_PREFIX_PATH "../../compiled/" FORCE)
+find_package ( OpenCV 3.4 REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+add_executable( display_image display_image.cc )
+target_link_libraries( display_image ${OpenCV_LIBS} )
