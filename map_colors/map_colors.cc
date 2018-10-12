@@ -46,12 +46,12 @@ int read_table_file(uchar *theTable,int tableSize,char * filename)
    uchar *table_ptr=theTable;
    int tableCtr=0;
    int digitCounter=0;
-   
+   int theNumber;
    enum parseState {Reading,Digits,Comment};
    parseState theState=Reading;
    
    memset(numberString,0,sizeof(numberString));
-   while ( (! input_table.eof()) && (0 == retVal) ) {
+   while ( (! input_table.eof()) && (0 == retVal) && (digitCounter < (tableSize-1)) ) {
       
       mychar = input_table.get();
       if(Comment != theState)
@@ -66,17 +66,17 @@ int read_table_file(uchar *theTable,int tableSize,char * filename)
       switch(theState) {
       case Reading:
 	 if(digitCounter) {
-	    *table_ptr=atoi(numberString);
+	    theNumber=atoi(numberString);
+	    if(theNumber > 255)
+	       theNumber=theNumber % 255;
+	    *table_ptr=theNumber;
 	    ++table_ptr;
 	    ++tableCtr;
 	    
 	    memset(numberString,0,sizeof(numberString));
 	    numberP=numberString;
 	    digitCounter=0;
-	    if(tableCtr > tableSize) {
-	       cout << "Oops.  I can only read " << tableSize << " variables. Quitting" << endl;
-	       retVal=1;		    
-	    }
+	 }
 	    break;
 	 case Comment:
 	    break;
@@ -89,7 +89,6 @@ int read_table_file(uchar *theTable,int tableSize,char * filename)
 	    cout << "Oops. Parser error. " << theState << " should never happen." << endl;
 	    retVal=1;
 	    break;
-	 }
       }
    }
    return retVal;
