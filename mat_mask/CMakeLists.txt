@@ -1,0 +1,7 @@
+cmake_minimum_required( VERSION 2.8 )
+project( mat_mask )
+set(CMAKE_PREFIX_PATH "../../compiled/" FORCE)
+find_package ( OpenCV 3.4 REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+add_executable( mat_mask mat_mask.cc )
+target_link_libraries( mat_mask ${OpenCV_LIBS} )

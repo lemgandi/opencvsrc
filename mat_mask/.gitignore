@@ -1,0 +1,8 @@
+# Ignore generated files
+mat_mask
+CMakeCache.txt
+CMakeFiles/**
+cmake_install.cmake
+Makefile
+*~
+
