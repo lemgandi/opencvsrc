@@ -1,25 +1,89 @@
+/*
+This file is part of opencvsrc.
+    opencvsrc is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    opencvsrc is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with opencvsrc.  If not, see <http://www.gnu.org/licenses/>.
+
+ */
+
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
+
+#include <getopt.h>
+
 using namespace std;
 using namespace cv;
-static void help(char* progName)
+
+static void usage(char* progName)
 {
-    cout << endl
-        <<  "This program shows how to filter images with mask: the write it yourself and the"
-        << "filter2d way. " << endl
-        <<  "Usage:"                                                                        << endl
-        << progName << " [image_path -- default ../images/lena.jpg] [G -- grayscale] "        << endl << endl;
+   cout << endl
+	 <<  "This program applies a filter read from disk to an image with filter2d" << endl
+	 <<  "Usage:"                                                                 << endl
+        << progName << " -i imagepath -t tablepath [-g] "        << endl << endl
+        << " Where imagepath is the name of a jpg uchar image, and tablepath is a"  << endl
+        << " text file defining a table mask. Use the -g switch to read the image" << endl
+        << " in grayscale" << endl;
 }
-void Sharpen(const Mat& myImage,Mat& Result);
+
+//Read mask from file
+
+int read_kernel( Mat &outkernel, const char *filename)
+{
+       outkernel = (Mat_<char>(3,3) <<  0, -1,  0,
+                                   -1,  5, -1,
+                                    0, -1,  0);
+       return 0;       
+
+}
 int main( int argc, char* argv[])
 {
-    help(argv[0]);
-    const char* filename = argc >=2 ? argv[1] : "../images/lena.jpg";
-    Mat src, dst0, dst1;
-    if (argc >= 3 && !strcmp("G", argv[2]))
-        src = imread( filename, IMREAD_GRAYSCALE);
+   char default_filename[] = {"../images/lena.jpg"};   
+   char *filename = 0;
+   char *table_filename = 0;
+   bool grayscale=false;
+   Mat src, dst0, dst1;
+   Mat kernel;
+   const char *optstring = {"i:t:g?"};
+   char opt;
+   
+
+   while((opt = getopt(argc,argv,optstring)) != -1) {
+      switch(opt) {
+      case 'i':
+	 filename=optarg;
+	 break;
+      case 't':
+	 table_filename=optarg;
+	 break;
+      case 'g':
+	 grayscale=true;
+	 break;
+      case '?':
+      default:
+	 usage(argv[0]);
+	 return 1;	       	   
+      }
+   }
+   
+   if(! filename ) {
+      filename=default_filename;
+   }
+   
+   if (! table_filename) {
+      cerr << "Oops. I must have a table filename." << endl;
+      return -1;
+   }
+    if (grayscale) 
+       src = imread( filename, IMREAD_GRAYSCALE);
     else
         src = imread( filename, IMREAD_COLOR);
     if (src.empty())
@@ -27,45 +91,17 @@ int main( int argc, char* argv[])
         cerr << "Can't open image ["  << filename << "]" << endl;
         return -1;
     }
+    if(0 != read_kernel(kernel,table_filename)) {
+       cerr << "Problem parsing table file [" << table_filename << "]" << endl;
+       return -1;       
+    }
+
     namedWindow("Input", WINDOW_AUTOSIZE);
     namedWindow("Output", WINDOW_AUTOSIZE);
     imshow( "Input", src );
-    double t = (double)getTickCount();
-    Sharpen( src, dst0 );
-    t = ((double)getTickCount() - t)/getTickFrequency();
-    cout << "Hand written function time passed in seconds: " << t << endl;
-    imshow( "Output", dst0 );
-    waitKey();
-    Mat kernel = (Mat_<char>(3,3) <<  0, -1,  0,
-                                   -1,  5, -1,
-                                    0, -1,  0);
-    t = (double)getTickCount();
     filter2D( src, dst1, src.depth(), kernel );
-    t = ((double)getTickCount() - t)/getTickFrequency();
-    cout << "Built-in filter2D time passed in seconds:     " << t << endl;
     imshow( "Output", dst1 );
     waitKey();
+    
     return 0;
-}
-void Sharpen(const Mat& myImage,Mat& Result)
-{
-    CV_Assert(myImage.depth() == CV_8U);  // accept only uchar images
-    const int nChannels = myImage.channels();
-    Result.create(myImage.size(),myImage.type());
-    for(int j = 1 ; j < myImage.rows-1; ++j)
-    {
-        const uchar* previous = myImage.ptr<uchar>(j - 1);
-        const uchar* current  = myImage.ptr<uchar>(j    );
-        const uchar* next     = myImage.ptr<uchar>(j + 1);
-        uchar* output = Result.ptr<uchar>(j);
-        for(int i= nChannels;i < nChannels*(myImage.cols-1); ++i)
-        {
-            *output++ = saturate_cast<uchar>(5*current[i]
-                         -current[i-nChannels] - current[i+nChannels] - previous[i] - next[i]);
-        }
-    }
-    Result.row(0).setTo(Scalar(0));
-    Result.row(Result.rows-1).setTo(Scalar(0));
-    Result.col(0).setTo(Scalar(0));
-    Result.col(Result.cols-1).setTo(Scalar(0));
 }
