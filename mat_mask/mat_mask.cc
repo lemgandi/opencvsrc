@@ -63,10 +63,10 @@ int read_kernel( Mat &outKernel, const char *filename)
    
    while (Done != myState) {
       input_kernel.getline(theline,sizeof(theline));
-      if( (input_kernel.eof()) || (0 == *theline) )
+      if(input_kernel.eof())
 	 myState=Done;
       else {
-      if( '#' == *theline)
+	 if( ('#' == *theline) || (0 == *theline))
 	 myState=Comment;
       else if(('/' == *theline) && ('/' == theline[1]))
 	 myState=Matsize;
@@ -82,22 +82,18 @@ int read_kernel( Mat &outKernel, const char *filename)
       case Comment:
 	 break;
       case Matsize:
-	 numberP = strtok(theline,"/ ");
+	 numberP = strtok(theline," /:abcdefghijklmnopqrstuvwxyz:");
 	 numRows=atoi(numberP);
-	 numberP = strtok(NULL," ");
+	 numberP = strtok(NULL," ,:abcdefghijklmnopqrstuvwxyz");
 	 numCols = atoi(numberP);
-	 cout << "numRows: " << numRows << " numCols: " << numCols << endl;
 	 outKernel.create(numRows,numCols,CV_8S);
 	 break;
       case Row:
-	 currentCol=0;
-	 
+	 currentCol=0;	 
 	 numberP=strtok(theline,", ;\t");
-	 cout << "numberP at start: [" << numberP << "]" <<  endl;
 	 while(currentCol < (numCols-1) ) {
    	    outKernel.at<uchar>(currentRow,currentCol) = atoi(numberP);
 	    numberP=strtok(NULL,", ;\t");
-	    cout << "numberP reading [" << numberP << "]" << endl;
 	    ++currentCol;
 	 }
 	 ++currentRow;
