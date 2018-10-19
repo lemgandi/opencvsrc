@@ -1,0 +1,8 @@
+# 3x3 sharpen matrix
+# This is mirror from the one in the tutorial
+# rows columns
+// 3    3
+-1 0 -1
+0 5 0
+-1 0 -1
+
