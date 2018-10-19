@@ -1,8 +1,0 @@
-# 3x3 sharpen matrix
-# This is the one from the tutorial
-# rows columns
-// 3    3
-0 -1 0
--1 5 -1
-0 -1 0
-

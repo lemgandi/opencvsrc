@@ -17,6 +17,7 @@ This file is part of opencvsrc.
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
+#include <fstream>
 
 #include <getopt.h>
 
@@ -36,12 +37,85 @@ static void usage(char* progName)
 
 //Read mask from file
 
-int read_kernel( Mat &outkernel, const char *filename)
+int read_kernel( Mat &outKernel, const char *filename)
 {
-       outkernel = (Mat_<char>(3,3) <<  0, -1,  0,
-                                   -1,  5, -1,
-                                    0, -1,  0);
-       return 0;       
+
+   int retVal=0;
+   
+   outKernel = (Mat_<char>(3,3) <<  0, -1,  0,
+		-1,  5, -1,
+		0, -1,  0);
+   
+   ifstream input_kernel(filename,ios_base::in);
+   if( (! input_kernel.good()) || (! input_kernel.is_open()) ) {
+      cout << "Oops. File [" << filename << "] will not open." << endl;
+	  retVal=1;
+   }
+   enum parseState {Started,Comment,Matsize,Row,Done};
+   parseState myState = Started;
+   char theline[255];
+   char *numberP;   
+   istringstream number;
+   int numRows;
+   int numCols;
+   int currentRow=0;
+   int currentCol=0;
+   
+   while (Done != myState) {
+      input_kernel.getline(theline,sizeof(theline));
+      if( (input_kernel.eof()) || (0 == *theline) )
+	 myState=Done;
+      else {
+      if( '#' == *theline)
+	 myState=Comment;
+      else if(('/' == *theline) && ('/' == theline[1]))
+	 myState=Matsize;
+      else
+	 myState=Row;
+      }
+      
+      switch(myState) {
+      case Started:
+	 cout << "Oops. Parse error. I do not know what this line [" << theline << "]  means" << endl;
+	 myState = Done;
+	 break;
+      case Comment:
+	 break;
+      case Matsize:
+	 numberP = strtok(theline,"/ ");
+	 numRows=atoi(numberP);
+	 numberP = strtok(NULL," ");
+	 numCols = atoi(numberP);
+	 cout << "numRows: " << numRows << " numCols: " << numCols << endl;
+	 outKernel.create(numRows,numCols,CV_8S);
+	 break;
+      case Row:
+	 currentCol=0;
+	 
+	 numberP=strtok(theline,", ;\t");
+	 cout << "numberP at start: [" << numberP << "]" <<  endl;
+	 while(currentCol < (numCols-1) ) {
+   	    outKernel.at<uchar>(currentRow,currentCol) = atoi(numberP);
+	    numberP=strtok(NULL,", ;\t");
+	    cout << "numberP reading [" << numberP << "]" << endl;
+	    ++currentCol;
+	 }
+	 ++currentRow;
+	 if(currentRow > numRows)
+	    myState=Done;
+	 break;	 
+      case Done:
+	 break;
+      default:
+	 cout << "Oops. Parse error. State = [" << myState << "]" << endl;
+	 myState=Done;
+	 break;	 
+      }
+      
+   }
+   
+   return retVal;
+   
 
 }
 int main( int argc, char* argv[])
@@ -97,6 +171,7 @@ int main( int argc, char* argv[])
     }
 
     namedWindow("Input", WINDOW_AUTOSIZE);
+    cout << "Kernel table:" << endl << kernel << endl;
     namedWindow("Output", WINDOW_AUTOSIZE);
     imshow( "Input", src );
     filter2D( src, dst1, src.depth(), kernel );
