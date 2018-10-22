@@ -1,0 +1,10 @@
+# 5x5 sharpen matrix
+# This washes out colors and sharpens further.
+
+// rows:5  cols:5
+-2 -1 0 -1 -2
+-2 -1 0 -1 -2
+-2 -1 32 -1 -2
+-2 -1 0 -1 -2
+-2 -1 0 -1 -2
+

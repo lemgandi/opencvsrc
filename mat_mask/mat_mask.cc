@@ -91,7 +91,7 @@ int read_kernel( Mat &outKernel, const char *filename)
       case Row:
 	 currentCol=0;	 
 	 numberP=strtok(theline,", ;\t");
-	 while(currentCol < (numCols-1) ) {
+	 while(currentCol < numCols) {
    	    outKernel.at<uchar>(currentRow,currentCol) = atoi(numberP);
 	    numberP=strtok(NULL,", ;\t");
 	    ++currentCol;
