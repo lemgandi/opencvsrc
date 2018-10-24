@@ -1,0 +1,8 @@
+# 3x3 pixellate matrix
+# Pixellation effect
+
+// rows:3  cols:3
+1 0 1
+1 -5 1
+1 0 1
+
