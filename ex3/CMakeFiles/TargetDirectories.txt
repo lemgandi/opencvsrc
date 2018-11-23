@@ -1,0 +1,1 @@
+/home/devel/opencv/appsrc/exercise_3/CMakeFiles/ex3.dir
