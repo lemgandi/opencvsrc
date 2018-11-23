@@ -1,0 +1,8 @@
+# Ignore generated files
+%PROGRAM%
+CMakeCache.txt
+CMakeFiles/**
+cmake_install.cmake
+Makefile
+*~
+
