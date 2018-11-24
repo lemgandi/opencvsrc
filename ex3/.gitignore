@@ -1,8 +1,0 @@
-# Ignore generated files
-ex3
-CMakeCache.txt
-CMakeFiles/**
-cmake_install.cmake
-Makefile
-*~
-

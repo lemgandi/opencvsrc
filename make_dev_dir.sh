@@ -10,7 +10,7 @@ usage() {
 }
 
 
-args=$( getopt "n:?" $*)
+args=$( getopt "n:" $*)
 if [ $? -gt 0 ]
 then
     usage $0
@@ -18,11 +18,11 @@ then
 fi
 
 set -- $args
+
 while true
 do
     case $1 in
 	-n) DIRNAME=$2 ; shift ;;
-	-?) DIRNAME=nothing ; usage $0 ; break;;
 	--)  break ;;
 	*)   echo Oops. Argparse error ; exit 1 ;;
     esac
@@ -41,9 +41,9 @@ then
     exit 1;
 fi
 
-
+set -x
 mkdir ${DIRNAME}
 sed -e "s/%PROGRAM%/${DIRNAME}/g" < ${CMAKELISTT} > ${DIRNAME}/CMakeLists.txt
 sed -e "s/%PROGRAM%/${DIRNAME}/g" < ${GITIGNORET} > ${DIRNAME}/.gitignore
-
+set +x
     
