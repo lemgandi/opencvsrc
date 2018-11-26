@@ -1,0 +1,7 @@
+cmake_minimum_required( VERSION 2.8 )
+project( ch1ex4 )
+set(CMAKE_PREFIX_PATH "../../compiled/" FORCE)
+find_package ( OpenCV 3.4 REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+add_executable( ch1ex4 ch1ex4.cc )
+target_link_libraries( ch1ex4 ${OpenCV_LIBS} )
