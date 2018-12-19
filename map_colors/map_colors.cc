@@ -32,8 +32,8 @@ static void usage(char *pname)
 {
     cout
         << "\n--------------------------------------------------------------------------" << endl
-        << "Usage: " << pname << " -f infilename -t tablename [-g]  " << endl << endl
-        << "-f: input picture " << endl
+        << "Usage: " << pname << " -i infilename -t tablename [-g]  " << endl << endl
+        << "-i: input picture " << endl
 	<< "-t: new color table" << endl
 	<< "-g: Read picture in greyscale if specified" << endl
         << "--------------------------------------------------------------------------"   << endl
