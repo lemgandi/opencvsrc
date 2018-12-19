@@ -1,6 +1,7 @@
 #!/bin/bash
 CMAKELISTT=./CMakeLists.txt.template
 GITIGNORET=gitignore.template
+CCT=./template.cc
 
 usage() {
     echo Usage: $1 -n dirname
@@ -45,5 +46,6 @@ set -x
 mkdir ${DIRNAME}
 sed -e "s/%PROGRAM%/${DIRNAME}/g" < ${CMAKELISTT} > ${DIRNAME}/CMakeLists.txt
 sed -e "s/%PROGRAM%/${DIRNAME}/g" < ${GITIGNORET} > ${DIRNAME}/.gitignore
+cp ${CCT} ${DIRNAME}/${DIRNAME}.cc
 set +x
     
