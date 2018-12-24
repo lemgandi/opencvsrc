@@ -33,6 +33,14 @@ using namespace cv;
 #define NUMDIGITS 10
 #define NUMDIR "numbers/"
 
+#define TYPEBOX_COLSIZE 500
+#define TYPEBOX_ROWSIZE 500
+#define NUMBOX_COLSIZE 10
+#define NUMBOX_ROWSIZE 20
+#define RIGHTBORDER (TYPEBOX_COLSIZE - NUMBOX_ROWSIZE)
+#define BOTTOMBORDER (TYPEBOX_ROWSIZE - NUMBOX_ROWSIZE)
+
+
 #ifdef CHSDEBUG
 /*
 What is going on in there?
@@ -88,7 +96,7 @@ It works correctly with a non-zero number however.
 //   Mat typeDisplay(500,500,CV_8U,0);
 
    
-   Mat typeDisplay(500,500,CV_8U);
+   Mat typeDisplay(TYPEBOX_ROWSIZE,TYPEBOX_COLSIZE,CV_8U);
    typeDisplay.setTo(0);
    
    if(0 != (status = fillNumbers(numbers,NUMDIGITS)))
@@ -100,10 +108,8 @@ It works correctly with a non-zero number however.
    
    namedWindow(windowName,WINDOW_AUTOSIZE);
    // namedWindow("Foo",WINDOW_AUTOSIZE);
-   int rowStart=0;
-   int rowEnd=20;
-   Range rowRange(0,20);
-   Range colRange(0,10);
+   Range rowRange(0,NUMBOX_ROWSIZE);
+   Range colRange(0,NUMBOX_COLSIZE);
 #ifdef CHSDEBUG
    printMat(typeDisplay,"typeDisplay");
 #endif
@@ -111,27 +117,62 @@ It works correctly with a non-zero number however.
    while('q' != keyValue) {
       imshow(windowName,typeDisplay);
       keyValue=waitKey(0);
+#ifdef CHSDEBUG
+	 cout << "keyValue: " << keyValue << endl;
+#endif	 
+
       if(isdigit(keyValue))
       {
 #ifdef CHSDEBUG	 
 	 printMat(numbers[atoi((char *)&keyValue)],"numberMatrix");
 #endif
 	 numbers[atoi((char *)&keyValue)].copyTo(typeDisplay(rowRange,colRange));
-	 colRange.start += 10;
-	 colRange.end += 10;
-	 if(colRange.start > 490)
+	 colRange.start += NUMBOX_COLSIZE;
+	 colRange.end += NUMBOX_COLSIZE;
+	 if(colRange.start > RIGHTBORDER)
 	 {
 	    colRange.start=0;
-	    colRange.end=10;
-	    rowRange.start += 20;
-	    rowRange.end += 20;
+	    colRange.end=NUMBOX_COLSIZE;
+	    rowRange.start += NUMBOX_ROWSIZE;
+	    rowRange.end += NUMBOX_ROWSIZE;
 	 }
-	 if(rowRange.start > 480)
+	 if(rowRange.start > BOTTOMBORDER)
 	 {
 	    colRange.start=0;
-	    colRange.end=10;
+	    colRange.end=NUMBOX_COLSIZE;
 	    rowRange.start=0;
-	    rowRange.end=20;
+	    rowRange.end=NUMBOX_ROWSIZE;
+	 }
+      }
+      else {
+	 switch(keyValue) {
+    	 case 81:  // leftarrow
+	 case 8: // backspace
+	    if(colRange.start) {
+	       colRange.start -= NUMBOX_COLSIZE;
+	       colRange.end -= NUMBOX_COLSIZE;
+	    }
+	    break;
+	 case 82:  // uparrow
+	    if(rowRange.start) {
+	       rowRange.start -= NUMBOX_ROWSIZE;
+	       rowRange.end -= NUMBOX_ROWSIZE;
+	    }
+	    break;
+	 case 84:  // downarrow
+	    if(rowRange.start < BOTTOMBORDER) {
+	       rowRange.start += NUMBOX_ROWSIZE;
+	       rowRange.end += NUMBOX_ROWSIZE;
+	    }
+	    break;
+	 case 83:  // rightarrow
+	    if(colRange.start < RIGHTBORDER) {
+	       colRange.start += NUMBOX_COLSIZE;
+	       colRange.end += NUMBOX_COLSIZE;
+	    }
+	    break;
+	 default:
+	    break;
 	 }
       }
       
