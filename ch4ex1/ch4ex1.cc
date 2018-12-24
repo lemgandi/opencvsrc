@@ -123,6 +123,15 @@ It works correctly with a non-zero number however.
 	 {
 	    colRange.start=0;
 	    colRange.end=10;
+	    rowRange.start += 20;
+	    rowRange.end += 20;
+	 }
+	 if(rowRange.start > 480)
+	 {
+	    colRange.start=0;
+	    colRange.end=10;
+	    rowRange.start=0;
+	    rowRange.end=20;
 	 }
       }
       
