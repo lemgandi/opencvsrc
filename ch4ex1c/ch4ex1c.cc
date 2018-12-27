@@ -40,8 +40,8 @@ using namespace cv;
 #define TYPEBOX_ROWSIZE 500
 #define NUMBOX_WIDTH 10
 #define NUMBOX_HEIGHT 20
-#define RIGHTBORDER (TYPEBOX_COLSIZE / NUMBOX_WIDTH)
-#define BOTTOMBORDER (TYPEBOX_ROWSIZE / NUMBOX_HEIGHT)
+#define RIGHTBORDER (TYPEBOX_COLSIZE - NUMBOX_WIDTH)
+#define BOTTOMBORDER (TYPEBOX_ROWSIZE - NUMBOX_HEIGHT)
 
 
 #ifdef CHSDEBUG
@@ -148,7 +148,7 @@ It works correctly with a non-zero number however.
    printMat(typeDisplay,"typeDisplay");
 #endif
    
-   while('q' != keyValue) {
+   while(('q' != keyValue) && ('Q' != keyValue)) {
       imshow(windowName,typeDisplay);
       keyValue=waitKey(0);
 #ifdef CHSDEBUG
@@ -163,12 +163,11 @@ It works correctly with a non-zero number however.
 #endif
 	 myMat.copyTo(typeDisplay(currentRect));
 	 currentRect.x += NUMBOX_WIDTH;
-	 currentRect.y += NUMBOX_WIDTH;
-	 if(currentRect.x > RIGHTBORDER)	 
+	 if(currentRect.x > RIGHTBORDER)
+	 {	 
 	    currentRect.x=0;
-	 if(currentRect.y > BOTTOMBORDER)
-	    currentRect.y=0;
-
+	    currentRect.y += NUMBOX_HEIGHT;
+	 }
       }
       else {
 	 switch(keyValue) {
