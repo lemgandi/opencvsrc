@@ -27,14 +27,17 @@ using namespace std;
 enum patchType {color,number};
 
 class colorPatch {
+private:   
    Mat patches[2];
    vector<Rect> patchLocations;
-   cv::Rect findPatchloc(cv::Rect);   
+   bool foundPatchloc(Rect);
+   
 public:
-   void setPatch(const cv::Mat &, patchType);
-   void getPatch(cv::Mat &, patchType);
-   void addPatchloc( cv::Rect);
-   void removePatchloc( cv::Rect);
-
+   void setPatch(const Mat &, patchType);
+   void getPatch(Mat &, patchType);
+   void addPatchloc( Rect);
+   void removePatchloc( Rect);
+   
+   
 };
 #endif

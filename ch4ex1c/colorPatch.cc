@@ -35,17 +35,42 @@ void colorPatch::getPatch(Mat& patch,patchType which)
    return;
 }
 
-
-void colorPatch::addPatchloc(cv::Rect loc)
+/*
+  Add a location to the list of places containing this patch
+ */
+void colorPatch::addPatchloc(const Rect loc)
 {
+   if( ! foundPatchloc(loc) )
+      patchLocations.push_back(loc);
+   
    return;
 }
 
-void colorPatch::removePatchloc(cv::Rect loc)
+/*
+   Remove a locatoin from the list of places containing this patch
+ */
+void colorPatch::removePatchloc(Rect loc)
 {
+   vector<Rect>::iterator iter=patchLocations.begin();
+   
+   while( (iter != patchLocations.end()) && (*iter != loc))
+      ++iter;
+   if (patchLocations.end() != iter)
+      patchLocations.erase(iter);
+   
    return;
 }
-
-cv::Rect colorPatch::findPatchloc(cv::Rect loc)
+/*
+  Is this patch location in the list of locations for this patch?
+ */
+bool colorPatch::foundPatchloc(Rect loc)
 {
+   bool retVal=false;
+   vector<Rect>::iterator iter=patchLocations.begin();
+   
+   while( (iter != patchLocations.end()) && (*iter != loc))
+      ++iter;
+   if (patchLocations.end() != iter)
+      retVal=true;
+   return retVal;
 }

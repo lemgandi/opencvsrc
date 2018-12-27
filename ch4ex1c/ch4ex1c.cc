@@ -1,5 +1,5 @@
 /*
- Exercise 3 from Intro to OpenCV: write downsampled avi from camera to disk
+j Exercise 3 from Intro to OpenCV: write downsampled avi from camera to disk
 
     This file is part of opencvsrc.
     opencvsrc is free software: you can redistribute it and/or modify
@@ -38,10 +38,10 @@ using namespace cv;
 
 #define TYPEBOX_COLSIZE 500
 #define TYPEBOX_ROWSIZE 500
-#define NUMBOX_COLSIZE 10
-#define NUMBOX_ROWSIZE 20
-#define RIGHTBORDER (TYPEBOX_COLSIZE - NUMBOX_ROWSIZE)
-#define BOTTOMBORDER (TYPEBOX_ROWSIZE - NUMBOX_ROWSIZE)
+#define NUMBOX_WIDTH 10
+#define NUMBOX_HEIGHT 20
+#define RIGHTBORDER (TYPEBOX_COLSIZE / NUMBOX_WIDTH)
+#define BOTTOMBORDER (TYPEBOX_ROWSIZE / NUMBOX_HEIGHT)
 
 
 #ifdef CHSDEBUG
@@ -54,31 +54,59 @@ void printMat(Mat &theMat, const char *matName)
       " Rows: " << theMat.rows << " Cols: " << theMat.cols << " Channels: " << theMat.channels() <<  " CV_8U = " << CV_8U << endl; 
 }
 #endif
+/*
+   Read a patch off the disk.
+ */
+int readPatch(Mat *matp,patchType type,int patchNum)
+{
+   stringstream ss;
+   string imgfn;
+   int status = 0;
+   
+   if(number == type) 
+      ss << NUMDIR << patchNum << ".jpg";   
+   else 
+      ss << NUMDIR << "C" << patchNum << ".jpg";      
+   
+   imgfn = ss.str();      
 
-int fillNumbers(Mat *matP,int matLen)
+#ifdef CHSDEBUG      
+   cout << "Image: [" << imgfn << "]" << endl;
+#endif      
+   errno = 0;
+   *matp=imread(imgfn,IMREAD_COLOR);
+   
+   if(matp->empty()) {
+      status=errno;
+      cerr << "Oops. Cannot read [" << imgfn << "]" << endl;
+   }
+
+   return status;
+}
+/*
+Fill in the numbers array.
+ */
+int fillNumbers(colorPatch *patchP,int numPatches)
 {
    int ii=0;
    stringstream ss;
-   string imgfn;
+   string imgfnNumber;
    int status=0;
+   Mat theMat(NUMBOX_HEIGHT,NUMBOX_WIDTH,CV_8UC3);
+
    
-   for (ii=0;ii<matLen;++ii) {
-      stringstream().swap(ss);
-      ss << NUMDIR << ii << ".jpg";
-      imgfn = ss.str();
-#ifdef CHSDEBUG      
-      cout << "Image: [" << imgfn << "]" << endl;
-#endif      
-      errno = 0;
-      *matP=imread(imgfn,IMREAD_COLOR);
-      // *matP=imread(imgfn,IMREAD_COLOR);
-      if(matP->empty()) {
-	 status=errno;
-	 cerr << "Oops. Cannot read [" << imgfn << "]" << endl;
+   for (ii=0;ii<numPatches;++ii) {
+      if ( 0 == (status = readPatch(&theMat,number,ii)))
+	 patchP->setPatch(theMat,number);      // *matP=imread(imgfn,IMREAD_GRAYSCALE);
+      else
 	 break;
-      }
-      ++matP;            
+      if( 0 == ( status = readPatch(&theMat,color,ii)))
+	 patchP->setPatch(theMat,color);
+      else
+	 break;
+      ++patchP;            
    }
+   
    return status;
 }
 
@@ -86,8 +114,9 @@ int fillNumbers(Mat *matP,int matLen)
 // Main Line
 int main(int argc, char *argv[])
 {
-   Mat numbers[NUMDIGITS];
+   colorPatch patches[NUMDIGITS];
    int status=0;
+   Mat myMat;
    /*
     The commented-out line below compiles correctly, but when run it produces:
 terminate called after throwing an instance of 'cv::Exception'
@@ -102,7 +131,7 @@ It works correctly with a non-zero number however.
    Mat typeDisplay(TYPEBOX_ROWSIZE,TYPEBOX_COLSIZE,CV_8UC3);
    typeDisplay.setTo(0);
    
-   if(0 != (status = fillNumbers(numbers,NUMDIGITS)))
+   if(0 != (status = fillNumbers(patches,NUMDIGITS)))
    {
       cerr << "Oops. Cannot read number images: " << status << endl;
    }
@@ -111,8 +140,10 @@ It works correctly with a non-zero number however.
    
    namedWindow(windowName,WINDOW_AUTOSIZE);
    // namedWindow("Foo",WINDOW_AUTOSIZE);
-   Range rowRange(0,NUMBOX_ROWSIZE);
-   Range colRange(0,NUMBOX_COLSIZE);
+   Point currentLoc(0,0);
+   Size theSize(NUMBOX_WIDTH,NUMBOX_HEIGHT);
+   Rect  currentRect(currentLoc,theSize);
+
 #ifdef CHSDEBUG
    printMat(typeDisplay,"typeDisplay");
 #endif
@@ -126,59 +157,42 @@ It works correctly with a non-zero number however.
 
       if(isdigit(keyValue))
       {
-#ifdef CHSDEBUG	 
-	 printMat(numbers[atoi((char *)&keyValue)],"numberMatrix");
+	 patches[atoi((char *)&keyValue)].getPatch(myMat,number);
+#ifdef CHSDEBUG
+	 printMat(myMat,"numberMatrix");
 #endif
-	 numbers[atoi((char *)&keyValue)].copyTo(typeDisplay(rowRange,colRange));
-	 colRange.start += NUMBOX_COLSIZE;
-	 colRange.end += NUMBOX_COLSIZE;
-	 if(colRange.start > RIGHTBORDER)
-	 {
-	    colRange.start=0;
-	    colRange.end=NUMBOX_COLSIZE;
-	    rowRange.start += NUMBOX_ROWSIZE;
-	    rowRange.end += NUMBOX_ROWSIZE;
-	 }
-	 if(rowRange.start > BOTTOMBORDER)
-	 {
-	    colRange.start=0;
-	    colRange.end=NUMBOX_COLSIZE;
-	    rowRange.start=0;
-	    rowRange.end=NUMBOX_ROWSIZE;
-	 }
+	 myMat.copyTo(typeDisplay(currentRect));
+	 currentRect.x += NUMBOX_WIDTH;
+	 currentRect.y += NUMBOX_WIDTH;
+	 if(currentRect.x > RIGHTBORDER)	 
+	    currentRect.x=0;
+	 if(currentRect.y > BOTTOMBORDER)
+	    currentRect.y=0;
+
       }
       else {
 	 switch(keyValue) {
     	 case 81:  // leftarrow
 	 case 8: // backspace
-	    if(colRange.start) {
-	       colRange.start -= NUMBOX_COLSIZE;
-	       colRange.end -= NUMBOX_COLSIZE;
-	    }
+	    if(currentRect.x) 
+	       currentRect.x -= NUMBOX_WIDTH;
 	    break;
 	 case 82:  // uparrow
-	    if(rowRange.start) {
-	       rowRange.start -= NUMBOX_ROWSIZE;
-	       rowRange.end -= NUMBOX_ROWSIZE;
-	    }
+	    if(currentRect.y) 
+	       currentRect.y -= NUMBOX_HEIGHT;
 	    break;
 	 case 84:  // downarrow
-	    if(rowRange.start < BOTTOMBORDER) {
-	       rowRange.start += NUMBOX_ROWSIZE;
-	       rowRange.end += NUMBOX_ROWSIZE;
-	    }
+	    if(currentRect.y < BOTTOMBORDER) 
+	       currentRect.y += NUMBOX_HEIGHT;
 	    break;
 	 case 83:  // rightarrow
-	    if(colRange.start < RIGHTBORDER) {
-	       colRange.start += NUMBOX_COLSIZE;
-	       colRange.end += NUMBOX_COLSIZE;
-	    }
+	    if(currentRect.x < RIGHTBORDER) 
+	       currentRect.x += NUMBOX_WIDTH;
 	    break;
 	 default:
 	    break;
 	 }
-      }
-      
+      }      
    }
    
 
