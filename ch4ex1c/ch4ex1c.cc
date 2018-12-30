@@ -48,10 +48,10 @@ using namespace cv;
 /*
 What is going on in there?
 */
-void printMat(Mat &theMat, const char *matName)
+void printMat(const Mat &theMat, const char *matName)
 {
    cout << matName << ": " <<  " elemsize: " << theMat.elemSize() << " Type: " << theMat.type() <<
-      " Rows: " << theMat.rows << " Cols: " << theMat.cols << " Channels: " << theMat.channels() <<  " CV_8U = " << CV_8U << endl; 
+      " Rows: " << theMat.rows << " Cols: " << theMat.cols << " Channels: " << theMat.channels() << endl; 
 }
 #endif
 /*
@@ -83,6 +83,7 @@ int readPatch(Mat *matp,patchType type,int patchNum)
 
    return status;
 }
+
 /*
 Fill in the numbers array.
  */
@@ -93,10 +94,9 @@ int fillNumbers(colorPatch *patchP,int numPatches)
    string imgfnNumber;
    int status=0;
    Mat theMat(NUMBOX_HEIGHT,NUMBOX_WIDTH,CV_8UC3);
-
-   
+    
    for (ii=0;ii<numPatches;++ii) {
-      if ( 0 == (status = readPatch(&theMat,number,ii)))
+       if ( 0 == (status = readPatch(&theMat,number,ii)))
 	 patchP->setPatch(theMat,number);      // *matP=imread(imgfn,IMREAD_GRAYSCALE);
       else
 	 break;
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 {
    colorPatch patches[NUMDIGITS];
    int status=0;
-   Mat myMat;
+
    /*
     The commented-out line below compiles correctly, but when run it produces:
 terminate called after throwing an instance of 'cv::Exception'
@@ -131,10 +131,12 @@ It works correctly with a non-zero number however.
    Mat typeDisplay(TYPEBOX_ROWSIZE,TYPEBOX_COLSIZE,CV_8UC3);
    typeDisplay.setTo(0);
    
+   Mat backSpaceDisplay(NUMBOX_HEIGHT,NUMBOX_WIDTH,CV_8UC3);
+   backSpaceDisplay.setTo(0);
+    
    if(0 != (status = fillNumbers(patches,NUMDIGITS)))
-   {
       cerr << "Oops. Cannot read number images: " << status << endl;
-   }
+   
    const char *windowName="Typewriter";
    int keyValue=0;
    
@@ -143,38 +145,55 @@ It works correctly with a non-zero number however.
    Point currentLoc(0,0);
    Size theSize(NUMBOX_WIDTH,NUMBOX_HEIGHT);
    Rect  currentRect(currentLoc,theSize);
-
+   char numBuf[4];
+   Rect lastRect=currentRect;
+   bool cursorLit=false;
 #ifdef CHSDEBUG
    printMat(typeDisplay,"typeDisplay");
 #endif
-   
-   while(('q' != keyValue) && ('Q' != keyValue)) {
+ 
+   while('q' != keyValue) {
+      if(! cursorLit)
+      {
+	 bitwise_not(typeDisplay(currentRect),typeDisplay(currentRect));
+	 cursorLit=true;
+	 cout << "cursorLit: " << cursorLit << endl;
+      }
+      lastRect=currentRect;
       imshow(windowName,typeDisplay);
       keyValue=waitKey(0);
 #ifdef CHSDEBUG
-	 cout << "keyValue: " << keyValue << endl;
-#endif	 
+      cout << "keyValue: " << keyValue << endl;
+#endif
 
       if(isdigit(keyValue))
       {
-	 patches[atoi((char *)&keyValue)].getPatch(myMat,number);
+	 memset(numBuf,0,sizeof(numBuf));
+	 *numBuf=keyValue;
 #ifdef CHSDEBUG
-	 printMat(myMat,"numberMatrix");
+	 printMat(patches[atoi(numBuf)].getPatch(number),"numberMatrix");
 #endif
-	 myMat.copyTo(typeDisplay(currentRect));
+	 patches[atoi(numBuf)].getPatch(number).copyTo(typeDisplay(currentRect));
 	 currentRect.x += NUMBOX_WIDTH;
 	 if(currentRect.x > RIGHTBORDER)
 	 {	 
 	    currentRect.x=0;
 	    currentRect.y += NUMBOX_HEIGHT;
 	 }
+	 cursorLit=false;
       }
       else {
-	 switch(keyValue) {
-    	 case 81:  // leftarrow
+	 cursorLit=false;
+	 switch(keyValue) { 
+
+         case 81:  // leftarrow
+  	    if(currentRect.x) 
+  	       currentRect.x -= NUMBOX_WIDTH;
+  	    break;
 	 case 8: // backspace
-	    if(currentRect.x) 
+	    if(currentRect.x)
 	       currentRect.x -= NUMBOX_WIDTH;
+	    backSpaceDisplay.copyTo(typeDisplay(currentRect));
 	    break;
 	 case 82:  // uparrow
 	    if(currentRect.y) 
@@ -188,12 +207,20 @@ It works correctly with a non-zero number however.
 	    if(currentRect.x < RIGHTBORDER) 
 	       currentRect.x += NUMBOX_WIDTH;
 	    break;
+	 case 13:
+	    if(currentRect.y < BOTTOMBORDER)
+	    {
+	       currentRect.y += NUMBOX_HEIGHT;
+	       currentRect.x = 0;
+	    }
+	    break;
 	 default:
+	    cursorLit=true;
 	    break;
 	 }
-      }      
+	 cout << "cursorLit at bottom: " << cursorLit << endl;
+	 if((lastRect != currentRect) && (! cursorLit)) 
+	    bitwise_not(typeDisplay(lastRect),typeDisplay(lastRect));	 
+      }
    }
-   
-
-      
 }

@@ -34,7 +34,7 @@ private:
    
 public:
    void setPatch(const Mat &, patchType);
-   void getPatch(Mat &, patchType);
+   Mat getPatch(patchType);
    void addPatchloc( Rect);
    void removePatchloc( Rect);
    

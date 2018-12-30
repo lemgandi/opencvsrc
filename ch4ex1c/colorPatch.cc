@@ -29,10 +29,11 @@ void colorPatch::setPatch(const Mat& patch,patchType which)
 /*
   Get a patch
  */
-void colorPatch::getPatch(Mat& patch,patchType which)
+Mat colorPatch::getPatch(patchType which)
 {
-   patch=patches[which];
-   return;
+   Mat retVal;
+   retVal = patches[which];
+   return retVal;
 }
 
 /*
