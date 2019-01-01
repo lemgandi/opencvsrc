@@ -31,13 +31,17 @@ private:
    Mat patches[2];
    vector<Rect> patchLocations;
    bool foundPatchloc(Rect);
+   int patchNumber;
    
 public:
    void setPatch(const Mat &, patchType);
    Mat getPatch(patchType);
    void addPatchloc( Rect);
    void removePatchloc( Rect);
-   
-   
+   int getNumber(void);
+   void setNumber(int);
+   int countLocs();
+   vector<Rect>::const_iterator getPatchLocationsBegin(void);
+   vector<Rect>::const_iterator getPatchLocationsEnd(void);
 };
 #endif

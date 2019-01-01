@@ -27,6 +27,23 @@ void colorPatch::setPatch(const Mat& patch,patchType which)
    return;
 }
 /*
+Get read-only iterator of patch locations.
+ */
+vector<Rect>::const_iterator colorPatch::getPatchLocationsBegin(void)
+{
+   return patchLocations.begin();
+}
+
+/*
+Get read-only iterator of patch locations.
+ */
+vector<Rect>::const_iterator colorPatch::getPatchLocationsEnd(void)
+{
+   return patchLocations.end();
+}
+
+
+/*
   Get a patch
  */
 Mat colorPatch::getPatch(patchType which)
@@ -54,12 +71,21 @@ void colorPatch::removePatchloc(Rect loc)
 {
    vector<Rect>::iterator iter=patchLocations.begin();
    
-   while( (iter != patchLocations.end()) && (*iter != loc))
+   while( (iter != patchLocations.end()) && (*iter != loc)) 
       ++iter;
+
    if (patchLocations.end() != iter)
       patchLocations.erase(iter);
    
    return;
+}
+int colorPatch::getNumber(void)
+{
+   return patchNumber;
+}
+void colorPatch::setNumber(int theNumber)
+{
+   patchNumber=theNumber;
 }
 /*
   Is this patch location in the list of locations for this patch?
@@ -74,4 +100,11 @@ bool colorPatch::foundPatchloc(Rect loc)
    if (patchLocations.end() != iter)
       retVal=true;
    return retVal;
+}
+/*
+How many locations is this patch in?
+ */
+int colorPatch::countLocs(void)
+{
+   return patchLocations.size();
 }

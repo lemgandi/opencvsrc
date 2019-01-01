@@ -54,6 +54,7 @@ void printMat(const Mat &theMat, const char *matName)
       " Rows: " << theMat.rows << " Cols: " << theMat.cols << " Channels: " << theMat.channels() << endl; 
 }
 #endif
+
 /*
    Read a patch off the disk.
  */
@@ -104,12 +105,52 @@ int fillNumbers(colorPatch *patchP,int numPatches)
 	 patchP->setPatch(theMat,color);
       else
 	 break;
+      patchP->setNumber(ii);
       ++patchP;            
    }
    
    return status;
 }
+/*
+Change mode from numbers to colors or back.
+*/
+void changeDisplayMode(patchType &theMode,Mat &typeDisplay,colorPatch *patchArray,int patchArraySize)
+{
+   int ii;
+   
+   vector<Rect>::const_iterator locIter;
+   patchType newMode;
+   
+   if(theMode == number)
+      newMode = color;
+   else
+      newMode=number;
+   
+   for(ii=0;ii<patchArraySize;++ii) {
+      for(locIter=patchArray->getPatchLocationsBegin(); locIter != patchArray->getPatchLocationsEnd(); ++locIter) {
+	 patchArray->getPatch(newMode).copyTo(typeDisplay(*locIter));
+      }
+      ++patchArray;
+   }
+   theMode = newMode;
+}
+/*
+  Can I find a patch by its Mat member?
+ */
+colorPatch *findPatchByContents(Mat contents,colorPatch *patchArray, int patchArraySize, patchType typeOfPatch)
+{
+   colorPatch *retVal=0;
+   int ii;
 
+   for(ii=0;ii<patchArraySize;++ii) {
+      if(! countNonZero(contents != patchArray->getPatch(number))) {
+	 retVal=patchArray;
+	 break;
+      }
+      ++patchArray;
+   }
+   return retVal;
+}
 
 // Main Line
 int main(int argc, char *argv[])
@@ -131,8 +172,8 @@ It works correctly with a non-zero number however.
    Mat typeDisplay(TYPEBOX_ROWSIZE,TYPEBOX_COLSIZE,CV_8UC3);
    typeDisplay.setTo(0);
    
-   Mat backSpaceDisplay(NUMBOX_HEIGHT,NUMBOX_WIDTH,CV_8UC3);
-   backSpaceDisplay.setTo(0);
+   Mat spaceDisplay(NUMBOX_HEIGHT,NUMBOX_WIDTH,CV_8UC3);
+   spaceDisplay.setTo(0);
     
    if(0 != (status = fillNumbers(patches,NUMDIGITS)))
       cerr << "Oops. Cannot read number images: " << status << endl;
@@ -148,6 +189,14 @@ It works correctly with a non-zero number however.
    char numBuf[4];
    Rect lastRect=currentRect;
    bool cursorLit=false;
+   colorPatch *patchP;
+   patchType currentMode=number;
+   Mat searchPatch;
+   
+#ifdef CHSDEBUG
+   int patchNumber;
+#endif
+
 #ifdef CHSDEBUG
    printMat(typeDisplay,"typeDisplay");
 #endif
@@ -157,7 +206,6 @@ It works correctly with a non-zero number however.
       {
 	 bitwise_not(typeDisplay(currentRect),typeDisplay(currentRect));
 	 cursorLit=true;
-	 cout << "cursorLit: " << cursorLit << endl;
       }
       lastRect=currentRect;
       imshow(windowName,typeDisplay);
@@ -173,6 +221,7 @@ It works correctly with a non-zero number however.
 #ifdef CHSDEBUG
 	 printMat(patches[atoi(numBuf)].getPatch(number),"numberMatrix");
 #endif
+	 patches[atoi(numBuf)].addPatchloc(currentRect);
 	 patches[atoi(numBuf)].getPatch(number).copyTo(typeDisplay(currentRect));
 	 currentRect.x += NUMBOX_WIDTH;
 	 if(currentRect.x > RIGHTBORDER)
@@ -185,15 +234,20 @@ It works correctly with a non-zero number however.
       else {
 	 cursorLit=false;
 	 switch(keyValue) { 
-
+	 case 8: // backspace
          case 81:  // leftarrow
   	    if(currentRect.x) 
   	       currentRect.x -= NUMBOX_WIDTH;
+#ifdef CHSDEBUG
+	    patchP=findPatchByContents(typeDisplay(currentRect),patches,NUMDIGITS,currentMode);
+	    if(patchP)
+	       cout << "Current patch is: " << patchP->getNumber() << " patch loc count: " << patchP->countLocs()  << endl;
+	    else
+	       cout << "Currently on a blank patch" << endl;
+#endif	    
   	    break;
-	 case 8: // backspace
-	    if(currentRect.x)
-	       currentRect.x -= NUMBOX_WIDTH;
-	    backSpaceDisplay.copyTo(typeDisplay(currentRect));
+	 case 99:   // 'c' -- change mode
+	    changeDisplayMode(currentMode,typeDisplay,patches,NUMDIGITS);
 	    break;
 	 case 82:  // uparrow
 	    if(currentRect.y) 
@@ -207,7 +261,18 @@ It works correctly with a non-zero number however.
 	    if(currentRect.x < RIGHTBORDER) 
 	       currentRect.x += NUMBOX_WIDTH;
 	    break;
-	 case 13:
+	 case 32:  // Space -- blanks cell
+	    cout << "Rectangle: " << currentRect << endl;
+	    bitwise_not(typeDisplay(currentRect),searchPatch);
+	    if(0 != (patchP=findPatchByContents(searchPatch,patches,NUMDIGITS,currentMode)))
+	       patchP->removePatchloc(currentRect);
+	    cout << "patchP: " << patchP << " currentMode " << currentMode << endl;
+	    spaceDisplay.copyTo(typeDisplay(currentRect));
+	    bitwise_not(typeDisplay(currentRect),typeDisplay(currentRect));
+	    if(currentRect.x < RIGHTBORDER)
+	       currentRect.x += NUMBOX_WIDTH;
+	    break;
+	 case 13:  // return
 	    if(currentRect.y < BOTTOMBORDER)
 	    {
 	       currentRect.y += NUMBOX_HEIGHT;
@@ -218,7 +283,6 @@ It works correctly with a non-zero number however.
 	    cursorLit=true;
 	    break;
 	 }
-	 cout << "cursorLit at bottom: " << cursorLit << endl;
 	 if((lastRect != currentRect) && (! cursorLit)) 
 	    bitwise_not(typeDisplay(lastRect),typeDisplay(lastRect));	 
       }
