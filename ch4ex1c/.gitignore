@@ -6,4 +6,3 @@ cmake_install.cmake
 Makefile
 *~
 *.avi
-*.jpg
