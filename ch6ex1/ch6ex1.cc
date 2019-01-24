@@ -46,7 +46,8 @@ void drawStuff(Mat canvas)
    // rectangle(Mat &,Point,Point,color,int thickness,int lineType)
    rectangle(canvas,Point(245,90),Point(320,120),drawnColor,3,cv::LINE_AA);
    fillConvexPoly(canvas,polyPoints,3,drawnColor,cv::LINE_AA);
-   
+
+   putText(canvas,"Oh Lena!",Point(310,85),cv::FONT_HERSHEY_SCRIPT_SIMPLEX,1.0,drawnColor,2,cv::LINE_AA);
 }
 
 // Main Line
