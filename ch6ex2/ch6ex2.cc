@@ -28,6 +28,7 @@ using namespace cv;
 
 const char *defaultImage = "../images/lena.jpg";
 const char *lenaText="Oh, Lena!";
+
 int main(int argc, char *argv[])
 {
 
@@ -48,17 +49,12 @@ int main(int argc, char *argv[])
       perror("Oops. No image data: ");
       exit(1);
    }
-   cvtColor(image,image,cv::COLOR_BGR2GRAY,0);
+   cvtColor(image,image,cv::COLOR_BGR2GRAY,0); // Lose color information in the image
+   cvtColor(image,image,cv::COLOR_GRAY2BGR);   // Convert image back to color so text shows in color
    
    Point textOrigin = Point(310,85);
-   Size textSize=getTextSize(lenaText,cv::FONT_HERSHEY_SCRIPT_SIMPLEX,1.0,2,0);
-   cout << textSize << endl;
-   Mat textMat = Mat(image,Rect(textOrigin,textSize));
-
-   cvtColor(textMat,textMat,cv::COLOR_GRAY2BGR);
    Scalar drawnColor = Scalar_<uchar>(66,128,98);
-   putText(textMat,lenaText,Point(0,textMat.rows-1),cv::FONT_HERSHEY_SCRIPT_SIMPLEX,1.0,drawnColor,2,cv::LINE_AA,false);
-   //   textMat.copyTo(Mat(image,Rect(textOrigin,textSize)));
+   putText(image,lenaText,textOrigin,cv::FONT_HERSHEY_SCRIPT_SIMPLEX,1.0,drawnColor,2,cv::LINE_AA,false);   
    
    namedWindow(argv[1],WINDOW_AUTOSIZE);
    imshow(argv[1],image);
