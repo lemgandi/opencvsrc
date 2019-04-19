@@ -45,7 +45,14 @@ int main(int argc, char *argv[])
    Rect lastRect=currentRect;
    Mat canvas(CANVAS_ROWSIZE,CANVAS_COLSIZE,CV_8UC3);
    const char *windowName = "Canvas";
-   canvas.setTo(0);
+   bool makeMark=false;
+
+   if (argc > 1) 
+      canvas=imread(argv[1],1);
+   else 
+      canvas.setTo(0);
+
+
    while('q' != keyValue)
    {
       bitwise_not(canvas(currentRect),canvas(currentRect));
@@ -57,12 +64,16 @@ int main(int argc, char *argv[])
 #ifdef CHSDEBUG
       cout << "keyValue: " << keyValue << endl;
 #endif
+      
       switch(keyValue)
       {
       case 8:  // Backspace
       case 81: // Leftarrow
 	 if(currentRect.x)
 	    currentRect.x -= BOX_WIDTH;
+	 break;
+      case 225:
+	 makeMark = !makeMark;
 	 break;
       case 82:  // Uparrow
 	 if (currentRect.y)
@@ -78,11 +89,13 @@ int main(int argc, char *argv[])
 	 if (currentRect.x < RIGHTBORDER)
 	    currentRect.x += BOX_WIDTH;
 	 break;
+	 
       default:  // Compensate for the bitwise_not at the top of the keyboard input loop
-	 bitwise_not(canvas(currentRect),canvas(currentRect));
+	 if(! makeMark)
+	    bitwise_not(canvas(currentRect),canvas(currentRect));
 	 break;
       }
-      if(lastRect != currentRect)
+      if( (lastRect != currentRect) && (! makeMark) ) 
 	 bitwise_not(canvas(lastRect),canvas(lastRect));
    }
 }
