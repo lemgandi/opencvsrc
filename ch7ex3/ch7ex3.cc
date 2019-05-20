@@ -22,44 +22,46 @@
 #include <iostream>
 #include <fstream>
 #include <time.h>
+#define CHS_DEBUG
 
 using namespace std;
 using namespace cv;
 
 RNG MyRNG;
 
-
+// Main Line
 int main(int argc, char *argv[])
 {
    
    MyRNG = RNG((uint64)time(NULL));
-   
-   Mat dim0Mat = Mat(1,100,CV_8U);
-   Mat dim1Mat= Mat(1,100,CV_8U);
-   Mat dim2Mat = Mat(1,100,CV_8U);
    Mat outputMat = Mat(1,100,CV_8UC3);
    Mat inptMatrices[3];
    const int inOutChannels[] =  {0,0,1,1,2,2};
 
-   inptMatrices[0] = dim0Mat;
-   inptMatrices[1] = dim1Mat;
-   inptMatrices[2] = dim2Mat;
-    
-   MyRNG.fill(dim0Mat,RNG::NORMAL,64,10);
-   MyRNG.fill(dim2Mat,RNG::NORMAL,192,10);
-   MyRNG.fill(dim2Mat,RNG::NORMAL,128,2);
+   inptMatrices[0] =  Mat(1,100,CV_8U);
+   inptMatrices[1] = Mat(1,100,CV_8U);
+   inptMatrices[2] =  Mat(1,100,CV_8U);
 
+    
+   MyRNG.fill(inptMatrices[0],RNG::NORMAL,64,10);
+   MyRNG.fill(inptMatrices[1],RNG::NORMAL,192,10);
+   MyRNG.fill(inptMatrices[2],RNG::NORMAL,128,2);
+   
+   // After creating and filling single-channel matrices, make the 3-channel
+   // matrix out of them.
    mixChannels(inptMatrices,3,&outputMat,1,inOutChannels,3);
-/*
+   
+#ifdef CHS_DEBUG
    cout << "Input Matrix 0" << endl;
-   cout << dim0Mat << endl;
+   cout << inptMatrices[0] << endl;
    cout << "Input Matrix 1" << endl;
-   cout << dim1Mat << endl;
+   cout << inptMatrices[1] << endl;
    cout << "Input Matrix 2" << endl;
-   cout << dim2Mat << endl;
+   cout << inptMatrices[2] << endl;
 
    cout << "Output matrix" << endl;
    cout << outputMat;
-*/
+#endif
+   
    
 }
