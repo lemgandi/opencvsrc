@@ -50,8 +50,12 @@ int main(int argc, char *argv[])
    dataMat.push_back(inptMatrices[0]);
    dataMat.push_back(inptMatrices[1]);
    dataMat.push_back(inptMatrices[2]);
-   
 /*
+   // This segment computes means as if data is cv::PCA::DATA_AS_COLS.
+   // A means matrix for cv::PCA::DATA_AS_ROWS would be 1 x 100, with 
+   // arithmetic mean for each column in each slot. We will let PCA 
+   // compute that for us.  I don't understand what the value of
+   // passing the matrixMeans in is.   
    float matrixMeans[3];
    matrixMeans[0] = (sum(inptMatrices[0])/inptMatrices[0].cols)[0];
    matrixMeans[1] = (sum(inptMatrices[1])/inptMatrices[1].cols)[0];
@@ -65,10 +69,10 @@ int main(int argc, char *argv[])
 // terminate called after throwing an instance of 'cv::Exception'
 //  what():  OpenCV(3.4.4) /home/devel/opencv/opencv-3.4.4/modules/core/src/pca.cpp:104:
 //  error: (-215:Assertion failed) _mean.size() == mean_sz in function 'operator()'
-
-*/   
+*/
+   
 #ifdef CHS_DEBUG
-/*   
+/*  
    cout << "Mean of inptMatrices[0]: " <<  matrixMeans[0] << endl;
    cout << "Mean of inptMatrices[1]: " <<  matrixMeans[1] << endl;
    cout << "Mean of inptMatrices[2]: " <<  matrixMeans[2] << endl;
@@ -76,7 +80,7 @@ int main(int argc, char *argv[])
    cout << "Means:" << endl;
    cout << means << endl;
    cout << "Mean size: " << means.size << endl;
-*/   
+*/
    cout << "Input Matrix 0" << endl;
    cout << inptMatrices[0] << endl;
    cout << "Input Matrix 1" << endl;
@@ -97,6 +101,7 @@ int main(int argc, char *argv[])
 //   PCA myAnalysis(dataMat,means,PCA::DATA_AS_ROW,2);
    // Pass empty Mat object as means.
    PCA myAnalysis(dataMat,Mat(),PCA::DATA_AS_ROW,2);
+//   PCA myAnalysis(dataMat,means,PCA::DATA_AS_COL,2);
 #ifdef CHS_DEBUG   
    Mat returnedMeans = myAnalysis.mean.clone();
    cout << "PCA Means: " << endl;
