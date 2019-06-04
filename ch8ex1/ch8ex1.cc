@@ -27,17 +27,18 @@ using namespace std;
 using namespace cv;
 
 void usage(char * pname,char *deftFN) {
-   cout << "Usage: " << pname << " [-s] [-1 firstthreshold] [-2 twostthreshold] [-f filename]" << endl;
+   cout << "Usage: " << pname << " [-s] [-1 firstthreshold] [-2 twostthreshold] [-f filename] [-h number]" << endl;
    cout << "Display video in original, grayscale, and canny() transformations" << endl;
    cout << "-s flag specifies a single window, otherwise in three different windows" << endl;
    cout << "-f specifies input video filename; default is " << deftFN << endl;
    cout << "-1 and -2 specify thresholds for the Canny edge detection transform" << endl;
+   cout << "-h: number of times to halve size of output window" << endl;
    
 }
 //
 // 1: display in three different windows
 //
-void displayWindows(float threshOne,float threshTwo,VideoCapture &inputFrames) {
+void displayWindows(float threshOne,float threshTwo,int pyrDownCount,VideoCapture &inputFrames) {
    Mat natFrame;
    Mat greyscaleFrame;
    Mat cannyFrame;
@@ -50,11 +51,28 @@ void displayWindows(float threshOne,float threshTwo,VideoCapture &inputFrames) {
    namedWindow(greyName,cv::WINDOW_AUTOSIZE);
    namedWindow(cannyName, cv::WINDOW_AUTOSIZE);
    char c;
-      
+   moveWindow(natName,0,0);
    inputFrames >> natFrame;
+   
    // imshow("foo",natFrame);
-      
+   int pdc;
+   pdc=pyrDownCount;
+   while(pdc) {
+      pyrDown(natFrame,natFrame);
+      --pdc;
+   }
+   if(pyrDownCount) {
+      moveWindow(greyName,natFrame.cols+5,0);
+      moveWindow(cannyName,(2 * natFrame.cols)+5,0);
+   }
    while(! natFrame.empty()) {
+      
+      pdc=pyrDownCount;
+      while(pdc) {
+	 pyrDown(natFrame,natFrame);
+	 --pdc;
+      }
+
       cvtColor(natFrame,greyscaleFrame,CV_BGR2GRAY);
       Canny(natFrame,cannyFrame,threshOne,threshTwo);
       imshow(natName,natFrame);
@@ -80,7 +98,7 @@ void displayOneWindow(float threshOne,float threshTwo,VideoCapture &inputFrames)
 
 int main(int argc, char *argv[])
 {
-   char optString[]={"sf:1:2:"};
+   char optString[]={"sf:1:2:h:"};
    char opt;
    bool singleWindow=false;
    char defaultFN[] = {"../images/Otto_first_steps.mp4"};
@@ -89,7 +107,8 @@ int main(int argc, char *argv[])
    VideoCapture inputFrames;
    double threshOne=100.0;
    double threshTwo=3.0;
-
+   int pyrDownCount=0;
+   
    memset(infileName,0,sizeof(infileName));
    strncpy(infileName,defaultFN,sizeof(infileName)-1);
    istringstream convert;
@@ -109,6 +128,10 @@ int main(int argc, char *argv[])
       case '2':
 	 convert.str(optarg);
 	 convert >> threshTwo;
+	 break;
+      case 'h':
+	 convert.str(optarg);
+	 convert >> pyrDownCount;
 	 break;
       default:
 	 usage(argv[0],defaultFN);
@@ -132,7 +155,7 @@ int main(int argc, char *argv[])
    if(0 == status)
    {
       if(! singleWindow) 
-	 displayWindows(threshOne,threshTwo,inputFrames);
+	 displayWindows(threshOne,threshTwo,pyrDownCount,inputFrames);
       else
 	 displayOneWindow(threshOne,threshTwo,inputFrames);
    }
