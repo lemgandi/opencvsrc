@@ -35,6 +35,20 @@ void usage(char * pname,char *deftFN) {
    cout << "-h: number of times to halve size of output window" << endl;
    
 }
+
+
+/*
+Shirink picture to fit display as directed by argument value
+'*/
+
+void shrink_as_necessary(Mat &picture,int pyrDownCount)
+{
+   while(pyrDownCount) {
+      pyrDown(picture,picture);
+      --pyrDownCount;
+   }
+}
+
 //
 // 1: display in three different windows
 //
@@ -47,31 +61,22 @@ void displayWindows(float threshOne,float threshTwo,int pyrDownCount,VideoCaptur
    char greyName[] = {"greyscale"};
    char cannyName[] = {"canny"};
    
-   namedWindow(natName,cv::WINDOW_AUTOSIZE);
-   namedWindow(greyName,cv::WINDOW_AUTOSIZE);
-   namedWindow(cannyName, cv::WINDOW_AUTOSIZE);
+   namedWindow(natName,WINDOW_AUTOSIZE);
+   namedWindow(greyName,WINDOW_AUTOSIZE);
+   namedWindow(cannyName,WINDOW_AUTOSIZE);
    char c;
    moveWindow(natName,0,0);
    inputFrames >> natFrame;
-   
+   shrink_as_necessary(natFrame,pyrDownCount);
    // imshow("foo",natFrame);
-   int pdc;
-   pdc=pyrDownCount;
-   while(pdc) {
-      pyrDown(natFrame,natFrame);
-      --pdc;
-   }
+
    if(pyrDownCount) {
       moveWindow(greyName,natFrame.cols+5,0);
       moveWindow(cannyName,(2 * natFrame.cols)+5,0);
    }
    while(! natFrame.empty()) {
-      
-      pdc=pyrDownCount;
-      while(pdc) {
-	 pyrDown(natFrame,natFrame);
-	 --pdc;
-      }
+
+      shrink_as_necessary(natFrame, pyrDownCount);
 
       cvtColor(natFrame,greyscaleFrame,CV_BGR2GRAY);
       Canny(natFrame,cannyFrame,threshOne,threshTwo);
@@ -88,11 +93,72 @@ void displayWindows(float threshOne,float threshTwo,int pyrDownCount,VideoCaptur
 	 break;
    }
 }
+
 //
 //1ab: Wfite everything to one window in three regions, labeled.
 //
-void displayOneWindow(float threshOne,float threshTwo,VideoCapture &inputFrames)
+void displayOneWindow(float threshOne,float threshTwo,int pyrDownCount,VideoCapture &inputFrames)
 {
+
+   Mat picture;
+   int pydctr;
+   const char *windowName={"Display"};
+
+   namedWindow(windowName,WINDOW_AUTOSIZE);
+   inputFrames >> picture;
+   shrink_as_necessary(picture,pyrDownCount);
+
+   cout << "Rows: " << picture.rows << " Cols: " << picture.cols << " elemSize: " << picture.elemSize() << endl;
+   cout << "CV_8UC3 " << CV_8UC3 << endl;
+   
+   Mat displayFrame(picture.rows,(picture.cols*3),picture.type());
+   Mat natFrame(displayFrame,Rect(0,0,picture.cols,picture.rows));
+   Mat greyFrame(displayFrame,Rect(picture.cols,0,picture.cols,picture.rows));
+   Mat cannyFrame(displayFrame,Rect((picture.cols)*2,0,picture.cols,picture.rows));
+
+/*
+   Scalar natFrameColor = Scalar_<uchar>(66,128,98);
+   natFrame.setTo(natFrameColor);
+
+   Scalar greyFrameColor = Scalar_<uchar>(208,0,22);
+   greyFrame.setTo(greyFrameColor);
+
+   Scalar cannyFrameColor = Scalar_<uchar>(77,4,202);
+   cannyFrame.setTo(cannyFrameColor);
+   
+   imshow(windowName,displayFrame);
+ 
+   char c=0;
+   c = waitKey(0);
+*/
+   char c=0;
+   Mat greyPicture;
+   Mat cannyPicture;
+   Scalar textColor = Scalar_<char>(82,82,50);
+   Point textOrigin = Point(10,45);
+   while(! picture.empty()) {
+      picture.copyTo(natFrame);
+      putText(natFrame,"Natural",textOrigin,FONT_HERSHEY_SIMPLEX,1,textColor,3);
+      
+      cvtColor(picture,greyPicture,CV_BGR2GRAY);
+      cvtColor(greyPicture,greyFrame,CV_GRAY2BGR);
+      putText(greyFrame,"Grey",textOrigin,FONT_HERSHEY_SIMPLEX,1,textColor,3);
+      
+      Canny(picture,cannyPicture,threshOne,threshTwo);
+      cvtColor(cannyPicture,cannyFrame,CV_GRAY2BGR);
+      putText(cannyFrame,"Canny",textOrigin,FONT_HERSHEY_SIMPLEX,1,textColor,3);
+      
+      imshow(windowName,displayFrame);
+      inputFrames >> picture;
+      if(! picture.empty())
+	 shrink_as_necessary(picture,pyrDownCount);
+      c=(char)waitKey(2);
+      if(27 == c)
+	 break;
+      else if ('s' == c)
+	 c=(char)waitKey(0);
+   }
+	
    return;
 }
 
@@ -157,7 +223,7 @@ int main(int argc, char *argv[])
       if(! singleWindow) 
 	 displayWindows(threshOne,threshTwo,pyrDownCount,inputFrames);
       else
-	 displayOneWindow(threshOne,threshTwo,inputFrames);
+	 displayOneWindow(threshOne,threshTwo,pyrDownCount,inputFrames);
    }
       
    
