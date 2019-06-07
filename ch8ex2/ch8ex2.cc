@@ -41,6 +41,19 @@ void usage(const char *pName)
  */
 void write_coords(int event,int x,int y,int flags,void *param)
 {
+   Mat &thePicture = *(Mat *)param;
+
+   Vec3b pixelValues = thePicture.at<Vec3b>(x,y);
+   switch(event) {
+   case EVENT_LBUTTONDOWN:
+      cout << "Red: " << static_cast<unsigned>(pixelValues[2]) <<
+	 " Green: " << static_cast<unsigned>(pixelValues[1]) << " Blue: " << static_cast<unsigned>(pixelValues[0]) << endl;
+      break;
+   default:
+      break;
+   }
+   
+   
    return;
 }
 
