@@ -19,7 +19,8 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include <iostream>
-#include <fstream>
+#include <sstream>
+#include <string>
 
 #include <getopt.h>
 
@@ -35,6 +36,33 @@ void usage(const char *pName)
 {
    cout << "Usage: " << pName << " [-i imagename]" << endl;
    cout << "Default imagename is " << DEFAULTFN << endl;
+   cout << "Display color values at pixel mouse cursor is over.  'r' will redraw clean; <esc> will exit." << endl;
+}
+void writeValuesToMat(Mat &theMat,Point currentLoc,Vec3b pixelValues)
+{
+   string myText;
+   ostringstream textStream(myText);
+   
+   textStream << "Red: " << static_cast<int>(pixelValues[2]) << " Green: " << static_cast<int>(pixelValues[1])  << " Blue: " << static_cast<int>(pixelValues[0]);
+
+   Scalar drawColor = Scalar_<uchar>(~pixelValues[0],~pixelValues[1],~pixelValues[2]);
+   int baseLine=0;
+   bool leftOrigin = true;
+   
+   Size theSize=getTextSize(textStream.str(),FONT_HERSHEY_PLAIN,1.0,2,&baseLine);
+   if((currentLoc.x + theSize.width) > theMat.cols)
+      currentLoc.x -= theSize.width;
+   if((currentLoc.y + theSize.height) > theMat.rows)
+      currentLoc.y -= theSize.height;
+   if(currentLoc.y < theSize.height)
+      currentLoc.y += theSize.height;
+   
+
+   cout << textStream.str() << " leftOrigin: " << leftOrigin << " X: " << currentLoc.x << " Y: " << currentLoc.y << " Height: " << theSize.height << " Rows: " << theMat.rows  << endl;
+
+   putText(theMat,textStream.str(),currentLoc,FONT_HERSHEY_PLAIN,1,drawColor,2,8,false);
+   
+   
 }
 /*
   Callback where we actually display the params.
@@ -44,10 +72,10 @@ void write_coords(int event,int x,int y,int flags,void *param)
    Mat &thePicture = *(Mat *)param;
 
    Vec3b pixelValues = thePicture.at<Vec3b>(x,y);
+   
    switch(event) {
    case EVENT_LBUTTONDOWN:
-      cout << "Red: " << static_cast<unsigned>(pixelValues[2]) <<
-	 " Green: " << static_cast<unsigned>(pixelValues[1]) << " Blue: " << static_cast<unsigned>(pixelValues[0]) << endl;
+      writeValuesToMat(thePicture,Point(x,y),pixelValues);
       break;
    default:
       break;
@@ -83,7 +111,8 @@ int main(int argc, char *argv[])
       }
    }
    theImage = imread(inFileName,IMREAD_COLOR);
-   reservedImage = Mat(theImage);
+   reservedImage = theImage.clone();
+
    
    if(theImage.empty()) {
       cerr << "Cannot read image in [" << inFileName << "]" << endl;
@@ -97,7 +126,7 @@ int main(int argc, char *argv[])
       imshow(windowName,theImage);
       while((27 != c) && (CHS_SUCCESS == status)) {
 	 imshow(windowName,theImage);
-	 c = waitKey(0);
+	 c = waitKey(1);
 	 switch(c) {
 	 case 27:
 	    status = CHS_FINISHED;
