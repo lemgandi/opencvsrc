@@ -33,8 +33,6 @@ using namespace cv;
 #define CHS_FINISHED 1
 
 // Globals for mouse callback routine
-Rect TheBox;
-bool DrawingBox = false;
 
 
 /*
@@ -52,7 +50,7 @@ Draw a baox on the image
 */
 void drawTheBox(Mat &image, Rect box,Scalar color)
 {
-   rectangle( image, TheBox.tl(),TheBox.br(), color);
+   rectangle( image, box.tl(),box.br(), color);
 }
 
 /*
@@ -61,31 +59,33 @@ void drawTheBox(Mat &image, Rect box,Scalar color)
 void drawRect(int event,int x,int y,int flags,void *param)
 {
    Mat &thePicture = *(Mat *)param;
+   static Rect theBox;
+   static bool drawingBox = false;
 
    Vec3b pixelValues = thePicture.at<Vec3b>(x,y);
    
    switch(event) {
    case EVENT_MOUSEMOVE:
-      if(DrawingBox) {
-	 TheBox.width = (x - TheBox.x);
-	 TheBox.height = (y - TheBox.y);
+      if(drawingBox) {
+	 theBox.width = (x - theBox.x);
+	 theBox.height = (y - theBox.y);
       }
       break;
    case EVENT_LBUTTONDOWN:
-      DrawingBox = true;
-      TheBox = Rect(x,y,0,0);
+      drawingBox = true;
+      theBox = Rect(x,y,0,0);
       break;
    case EVENT_LBUTTONUP:
-      DrawingBox = false;
-      if(0 > TheBox.width) {
-	 TheBox.x += TheBox.width;
-	 TheBox.width = -TheBox.width;
+      drawingBox = false;
+      if(0 > theBox.width) {
+	 theBox.x += theBox.width;
+	 theBox.width = -theBox.width;
       }
-      if( 0 > TheBox.height) {
-	 TheBox.y += TheBox.height;
-	 TheBox.height = -TheBox.height;
+      if( 0 > theBox.height) {
+	 theBox.y += theBox.height;
+	 theBox.height = -theBox.height;
       }
-      drawTheBox(thePicture,TheBox,Scalar(0,0,255));
+      drawTheBox(thePicture,theBox,Scalar(0,0,255));
    default:
       break;
    }
