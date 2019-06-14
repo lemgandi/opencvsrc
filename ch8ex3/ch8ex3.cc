@@ -52,6 +52,49 @@ void drawTheBox(Mat &image, Rect box,Scalar color)
 {
    rectangle( image, box.tl(),box.br(), color);
 }
+/*
+ Count one value for histogram
+ */
+void putinBin(Vec<int,8> &theBins,uchar theVal)
+{
+   int binNumber = theVal / 32;
+   
+   //   cout << "theVal: " << static_cast<int>(theVal) << " binNumber: " << binNumber << endl;
+			  
+   theBins[binNumber] += 1;   
+}
+
+/*
+Compute values for histogram
+ */
+void computeHistogram(Mat &thePicture,Rect theBox)
+{
+   Mat myChunk = Mat(thePicture,theBox);
+   Vec<int,8> blueBins = Vec<int,8>();
+   Vec<int,8> greenBins = Vec<int,8>();
+   Vec<int,8> redBins = Vec<int,8>();
+   
+   int kk;
+   for(kk=0;kk<8;++kk) {
+      blueBins[kk] = 0;
+      greenBins[kk]=0;
+      redBins[kk]=0;
+   }
+   
+   MatConstIterator_<Vec3b> iter = myChunk.begin<Vec3b>();
+   while(iter != myChunk.end<Vec3b>()) {
+      putinBin(blueBins,(*iter)[0]);
+      putinBin(greenBins,(*iter)[1]);
+      putinBin(redBins,(*iter)[2]);
+      ++iter;
+   }
+   
+   cout << "Blue: " << blueBins << endl;
+   cout << "Green: " << greenBins << endl;
+   cout << "Red: " << redBins << endl;
+   
+   return;
+}
 
 /*
   Mouse callback -- draw rectangle 
@@ -63,6 +106,8 @@ void drawRect(int event,int x,int y,int flags,void *param)
    static bool drawingBox = false;
 
    Vec3b pixelValues = thePicture.at<Vec3b>(x,y);
+   // Rather than just red, make the rect the xor of the current pixel.  Not great, but good for visibility.
+   Scalar drawColor = Scalar_<uchar>(~pixelValues(0),~pixelValues(1),~pixelValues(2));
    
    switch(event) {
    case EVENT_MOUSEMOVE:
@@ -85,7 +130,9 @@ void drawRect(int event,int x,int y,int flags,void *param)
 	 theBox.y += theBox.height;
 	 theBox.height = -theBox.height;
       }
-      drawTheBox(thePicture,theBox,Scalar(0,0,255));
+      drawTheBox(thePicture,theBox,drawColor);
+      computeHistogram(thePicture,theBox);
+      break;
    default:
       break;
    }
