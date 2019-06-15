@@ -26,13 +26,16 @@
 
 using namespace std;
 using namespace cv;
+bool HistogramWindowsUp = true;
+
+const char *BlueWindowName = "BlueHistogram";
+const char *GreenWindowName = "GreenHistogram";
+const char *RedWindowName = "RedHistogram";
 
 #define DEFAULTFN "../images/lena.jpg"
 #define CHS_SUCCESS 0
 #define CHS_FAILURE -1
 #define CHS_FINISHED 1
-
-// Globals for mouse callback routine
 
 
 /*
@@ -65,21 +68,62 @@ void putinBin(Vec<int,8> &theBins,uchar theVal)
 }
 
 /*
+Draw a histogram window
+ */
+void drawAHistogram(Vec<int,8> bins,Scalar color,const char *windowName)
+{
+   int kk;
+   int status=CHS_SUCCESS;
+   int blockWidth=0;
+   
+   int largestBinValue=0;
+   for(kk=0;kk<bins.rows;++kk) {
+      if(bins[kk] > largestBinValue)
+	 largestBinValue=bins[kk];
+      ++kk;
+   }
+   if(! largestBinValue)
+      status=CHS_FAILURE;
+  
+   if(CHS_SUCCESS == status) {
+      if(largestBinValue < 512)
+	 blockWidth=2;
+      else
+	 blockWidth=1;
+   }
+   Mat theHistogram((bins.rows * 10),((blockWidth * largestBinValue)+10),CV_8UC3);
+   theHistogram.setTo(0xff);
+   
+   //`  Vec<Rect,8> bars;
+   Rect bars[8];
+   int yValue=0;
+   // xValue=0;
+   //heightValue=10;
+   for(kk=0;kk<8;++kk) {
+      bars[kk] = Rect(0,yValue,(blockWidth * bins[kk]),10);
+      rectangle(theHistogram,bars[kk],color,1);
+      yValue += 10;
+   }
+   
+   namedWindow(windowName);
+   imshow(windowName,theHistogram);
+   
+}
+
+/*
 Compute values for histogram
  */
-void computeHistogram(Mat &thePicture,Rect theBox)
+void computeDrawHistogram(Mat &thePicture,Rect theBox)
 {
    Mat myChunk = Mat(thePicture,theBox);
-   Vec<int,8> blueBins = Vec<int,8>();
-   Vec<int,8> greenBins = Vec<int,8>();
-   Vec<int,8> redBins = Vec<int,8>();
+   Vec<int,8> blueBins;
+   Vec<int,8> greenBins;
+   Vec<int,8> redBins;
    
-   int kk;
-   for(kk=0;kk<8;++kk) {
-      blueBins[kk] = 0;
-      greenBins[kk]=0;
-      redBins[kk]=0;
-   }
+   // Zero counter vectors
+   blueBins = blueBins * 0;
+   greenBins = greenBins * 0;
+   redBins = redBins * 0;
    
    MatConstIterator_<Vec3b> iter = myChunk.begin<Vec3b>();
    while(iter != myChunk.end<Vec3b>()) {
@@ -92,6 +136,10 @@ void computeHistogram(Mat &thePicture,Rect theBox)
    cout << "Blue: " << blueBins << endl;
    cout << "Green: " << greenBins << endl;
    cout << "Red: " << redBins << endl;
+   
+   drawAHistogram(blueBins,Scalar_<uchar>(255,0,0),BlueWindowName);
+   drawAHistogram(greenBins,Scalar_<uchar>(0,255,0),GreenWindowName);
+   drawAHistogram(redBins,Scalar_<uchar>(0,0,255),RedWindowName);
    
    return;
 }
@@ -121,17 +169,18 @@ void drawRect(int event,int x,int y,int flags,void *param)
       theBox = Rect(x,y,0,0);
       break;
    case EVENT_LBUTTONUP:
-      drawingBox = false;
-      if(0 > theBox.width) {
-	 theBox.x += theBox.width;
-	 theBox.width = -theBox.width;
-      }
-      if( 0 > theBox.height) {
-	 theBox.y += theBox.height;
-	 theBox.height = -theBox.height;
-      }
-      drawTheBox(thePicture,theBox,drawColor);
-      computeHistogram(thePicture,theBox);
+	 drawingBox = false;
+	 if(0 > theBox.width) {
+	    theBox.x += theBox.width;
+	    theBox.width = -theBox.width;
+	 }
+	 if( 0 > theBox.height) {
+	    theBox.y += theBox.height;
+	    theBox.height = -theBox.height;
+	 }
+	 drawTheBox(thePicture,theBox,drawColor);
+	 computeDrawHistogram(thePicture,theBox);
+	 HistogramWindowsUp=true;
       break;
    default:
       break;
@@ -149,6 +198,7 @@ int main(int argc, char *argv[])
    char inFileName[80];
    Mat theImage;
    int status=CHS_SUCCESS;
+
    const char *windowName="PixelValues";
    Mat reservedImage;
    
@@ -184,9 +234,17 @@ int main(int argc, char *argv[])
 	 c = waitKey(1);
 	 switch(c) {
 	 case 27:
+	    destroyWindow(windowName);
 	    status = CHS_FINISHED;
+	    
 	    break;
 	 case 'r': // Redraw the window with no text visible.
+	    if(HistogramWindowsUp)   {
+	       destroyWindow(BlueWindowName);
+	       destroyWindow(GreenWindowName);
+	       destroyWindow(RedWindowName);
+	       HistogramWindowsUp = false;
+	    }
 	    reservedImage.copyTo(theImage);
 	    break;
 	 default:
