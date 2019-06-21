@@ -19,12 +19,29 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <fstream>
+
+#include <getopt.h>
 
 using namespace std;
 using namespace cv;
 
+void usage(const char *pname)
+{
+}
 
 int main(int argc, char *argv[])
 {
+   const char *optString="";
+   char opt;
+
+   while((opt = getopt(argc,argv,optString)) != -1) {
+      switch(opt) {
+      default:
+	 usage(argv[0]);
+	 return 1;
+      }
+   }
 }
