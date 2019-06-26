@@ -1,0 +1,27 @@
+%YAML:1.0
+---
+DiskStuff:
+   -
+      sequenceNumber: 0
+      drawColor: [ 148, 136, 34, 0 ]
+      drawnRect: [ 122, 359, 0, 0 ]
+   -
+      sequenceNumber: 0
+      drawColor: [ 134, 127, 30, 0 ]
+      drawnRect: [ 249, 245, 49, 37 ]
+   -
+      sequenceNumber: 1
+      drawColor: [ 174, 170, 45, 0 ]
+      drawnRect: [ 314, 254, 35, 27 ]
+   -
+      sequenceNumber: 2
+      drawColor: [ 195, 224, 144, 0 ]
+      drawnRect: [ 257, 339, 74, 25 ]
+   -
+      sequenceNumber: 3
+      drawColor: [ 176, 191, 86, 0 ]
+      drawnRect: [ 140, 57, 68, 27 ]
+   -
+      sequenceNumber: 1
+      drawColor: [ 138, 131, 62, 0 ]
+      drawnRect: [ 280, 390, 78, 48 ]
