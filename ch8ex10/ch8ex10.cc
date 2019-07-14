@@ -184,7 +184,12 @@ void usage(const char *pname)
    cout << "Usage: " << pname << " [-i imagename] " << endl;
    cout << "imagename defaults to " << defaultImgFN << endl;
    cout << "Read and write structs to disk with opencv" << endl;
-   cout << "Structs are written to imagename.ocv " << endl;
+   cout << "Structs are written to imagename.imagext.yml " << endl;
+   cout << "Image window commands:" << endl;
+   cout << "'w' - Write boxes to disk" << endl;   
+   cout << "'r' - Read boxes from disk" << endl;
+   cout << "'c' - Clear all boxes " << endl;
+   
    
 }
 
