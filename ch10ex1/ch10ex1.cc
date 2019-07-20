@@ -30,11 +30,65 @@ using namespace cv;
 
 const char * defaultImgFN="../images/landscape.jpg";
 
+
 void usage(const char *pname)
 {
    cout << "Usage: " << pname << "-i imagename" << endl;
    cout << "imagename defaults to " << defaultImgFN << endl;
 }
+
+
+
+/*
+Ugh. The only way to figure out if a window has been created ( and may or may not be displayed) is
+a try/catch block.
+*/
+bool window_exists(const char *windowName)
+{
+   bool retVal=true;
+
+   
+   try {
+      getWindowProperty(windowName,0);
+   }
+   catch (Exception ex) {
+      retVal=false;
+   }
+   return retVal;
+}
+/*
+Display a processed image in a windowname.
+ */
+void displayImage(Mat image,const String &windowName)
+{
+   if(window_exists(windowName.c_str()))
+      destroyWindow(windowName);
+   namedWindow(windowName,WINDOW_AUTOSIZE);
+   imshow(windowName,image);
+   
+}
+
+/*
+Compare GaussianBlur and bilateral smooth
+ */
+void displayComparision(Mat theImage)
+{
+   Mat fiveByFive;
+   String windowNameFivexFive("FiveByFiveTwice");
+   Mat elevenBlurred;
+
+   
+   GaussianBlur(theImage,fiveByFive,Size(5,5),0,0);
+   GaussianBlur(fiveByFive,fiveByFive,Size(5,5),0,0);
+   displayImage(fiveByFive,String("FiveByFiveTwice"));
+   
+   bilateralFilter(theImage,elevenBlurred,11,3.8,3.8);
+   displayImage(elevenBlurred,String("elevenBlurred"));
+   
+   
+}
+
+
 // Display an image smoothed in various ways.
 // Note that theImage is passed on the stack, but this
 // just passes the header,not the whole shebang.
@@ -47,16 +101,9 @@ void displaySmoothed(int windowSize,Mat theImage)
    stringstream theName;
    theName << "Blur" << windowSize;
    String windowName(theName.str());
-   try {   
-      if(-1 != getWindowProperty(windowName,0))
-	 destroyWindow(windowName);
-   }
-   catch(Exception ex) {
-      // If the window does not exist, we are still ok. If it _does_ exist, we kill it before recreating it.
-   }
    
-   
-   namedWindow(windowName,WINDOW_AUTOSIZE);
+   displayImage(outputImage,windowName);
+
    imshow(windowName,outputImage);
 }
 
@@ -106,6 +153,9 @@ int main(int argc, char *argv[])
 	 break;
       case '+':
 	 displaySmoothed(11,startImage);
+	 break;
+      case 'b':
+	 displayComparision(startImage);
 	 break;
       default:
 	 break;	 
