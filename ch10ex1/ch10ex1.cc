@@ -35,6 +35,13 @@ void usage(const char *pname)
 {
    cout << "Usage: " << pname << "-i imagename" << endl;
    cout << "imagename defaults to " << defaultImgFN << endl;
+   cout << "Window commands:" << endl;
+   cout << "'3' - gaussian blur kernel size 3" << endl;
+   cout << "'5' - gaussian blur kernel size 5" << endl;
+   cout << "'9' - gaussian blur kernel size 9" << endl;
+   cout << "'+' - gaussian blur kernel size 11" << endl;
+   cout << "'b' - Compare 11 gaussian blur to bilateral filter 11" << endl;
+   
 }
 
 
@@ -81,6 +88,10 @@ void displayComparision(Mat theImage)
    GaussianBlur(theImage,fiveByFive,Size(5,5),0,0);
    GaussianBlur(fiveByFive,fiveByFive,Size(5,5),0,0);
    displayImage(fiveByFive,String("FiveByFiveTwice"));
+   
+   // The sigmaColor and sigmaSpace params here are calculated from the formula given on p 266.
+   // I think the book is wrong on this and the errata back me up.  Correct formula is:
+   // sigma = (((ksize.width - 1)/2)*0.3)+0.8
    
    bilateralFilter(theImage,elevenBlurred,11,3.8,3.8);
    displayImage(elevenBlurred,String("elevenBlurred"));
