@@ -1,0 +1,9 @@
+# Ignore generated files
+ch10ex5
+CMakeCache.txt
+CMakeFiles/**
+cmake_install.cmake
+Makefile
+*~
+*.avi
+*.jpg
