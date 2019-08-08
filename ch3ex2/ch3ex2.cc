@@ -1,6 +1,5 @@
 /*
- Exercise 3 from Intro to OpenCV: write downsampled avi from camera to disk
-
+  Chapter 3 exercise 2: matrix and vector types 
     This file is part of opencvsrc.
     opencvsrc is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

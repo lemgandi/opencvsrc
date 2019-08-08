@@ -1,5 +1,5 @@
 /*
- Exercise 3 from Intro to OpenCV: diff a pair of images and display results
+ Exercise 3 from Intro to OpenCV: diff a pair of images and display results with various postprocessing
 
     This file is part of opencvsrc.
     opencvsrc is free software: you can redistribute it and/or modify

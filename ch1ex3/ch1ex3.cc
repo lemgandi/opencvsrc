@@ -1,5 +1,5 @@
 /*
- Exercise 3 from Intro to OpenCV: write downsampled avi from camera to disk
+    Chapter 1 exercise 3:  write frame rate to video
 
     This file is part of opencvsr.
     opencvsr is free software: you can redistribute it and/or modify

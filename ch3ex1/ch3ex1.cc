@@ -1,5 +1,5 @@
 /*
- Exercise 3 from Intro to OpenCV: write downsampled avi from camera to disk
+    Chapter 3 exercise 1: types and type helpers
 
     This file is part of opencvsrc.
     opencvsrc is free software: you can redistribute it and/or modify

@@ -25,3 +25,7 @@ DiskStuff:
       sequenceNumber: 1
       drawColor: [ 138, 131, 62, 0 ]
       drawnRect: [ 280, 390, 78, 48 ]
+   -
+      sequenceNumber: 0
+      drawColor: [ 135, 129, 46, 0 ]
+      drawnRect: [ 172, 226, 59, 58 ]

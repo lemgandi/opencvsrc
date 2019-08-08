@@ -100,8 +100,8 @@ int main(int argc, char *argv[])
 
 //   PCA myAnalysis(dataMat,means,PCA::DATA_AS_ROW,2);
    // Pass empty Mat object as means.
-   PCA myAnalysis(dataMat,Mat(),PCA::DATA_AS_ROW,2);
-//   PCA myAnalysis(dataMat,means,PCA::DATA_AS_COL,2);
+//   PCA myAnalysis(dataMat,Mat(),PCA::DATA_AS_ROW,2);
+   PCA myAnalysis(dataMat,Mat(),PCA::DATA_AS_COL,2);
 #ifdef CHS_DEBUG   
    Mat returnedMeans = myAnalysis.mean.clone();
    cout << "PCA Means: " << endl;
@@ -114,8 +114,9 @@ int main(int argc, char *argv[])
 #endif
    
    Mat projectedData = myAnalysis.project(dataMat);
-
-   cout << "Projected Data:" << endl;
+   
+   cout << "Projected Data size: " << projectedData.size << endl;
+      cout << "Projected Data:" << endl;
    cout << projectedData << endl;
    cout << "Projected data gives the end points of lines which would encompass \
 all of the variances of the input data if plotted  on a 3d cartesian coordinate \

@@ -1,5 +1,5 @@
 /*
- Exercise 3 from Intro to OpenCV: write downsampled avi from camera to disk
+ Exercise 3 chapter 6: fps display on video
 
     This file is part of opencvsrc.
     opencvsrc is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 {
    cout << "Start" << endl;
    
-   VideoCapture myCamera(0);
+   VideoCapture myCamera("../images/Otto_first_steps.mp4");
    Mat theframe;
    const char *windowName="Camera";
    const int framesCalc=120;
@@ -49,7 +49,8 @@ int main(int argc, char *argv[])
    namedWindow(windowName,cv::WINDOW_AUTOSIZE);
    while(true) {
       myCamera >> theframe;
-   
+      if(theframe.empty() )
+	 break;
       ++framesShown;
       if(framesShown == framesCalc) {
 	 tixTaken=getTickCount() - startTix;
