@@ -66,6 +66,7 @@ void doDiff(Mat &imageFirst,Mat &imageTwost,Mat &outputImage,diffType whatToDo,d
       cout << "MORPH_OPEN" << endl;
       break;
    default:  //EXor
+      cout << "Erode and xor" << endl;
       erode(outputImage,eroded,morphArray);
       bitwise_xor(outputImage,eroded,outputImage);
       break;
