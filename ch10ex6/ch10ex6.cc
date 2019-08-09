@@ -27,6 +27,7 @@
 
 using namespace std;
 using namespace cv;
+enum arithmeticAction {Null,Add,Subtract};
 
 void usage(const char *pname)
 {
@@ -37,11 +38,13 @@ void usage(const char *pname)
    cout << "'-b' blocksize -- blocksize of adaptive filter (blocksize must be odd)" << endl;
    cout << "'-o' offset -- offset of adaptive filter" << endl;
    cout << "'-s' subtract -- subtract filtered from original" << endl;
+   cout << "-a' add -- add filtered to original" << endl;
+   cout << "'-e' Erode -- erode filtered" << endl;
 }
 
 int main(int argc, char *argv[])
 {
-   const char *optString="i:b:o:vgs";
+   const char *optString="i:b:o:vgsae";
    char opt;
 
    String imageFN;
@@ -50,7 +53,8 @@ int main(int argc, char *argv[])
    double blockSize = 15;
    double offset = 10;
    istringstream converter;
-   bool do_subtract=false;
+   arithmeticAction doAction;
+   bool doErode=false;
    
    while((opt = getopt(argc,argv,optString)) != -1) {
       switch(opt) {
@@ -72,7 +76,13 @@ int main(int argc, char *argv[])
 	 adaptiveMethod=ADAPTIVE_THRESH_GAUSSIAN_C;
 	 break;
       case 's':
-	 do_subtract = true;
+	 doAction = Subtract;
+	 break;
+      case 'a':
+	 doAction = Add;
+	 break;
+      case 'e':
+	 doErode = true;
 	 break;
       default:
 	 usage(argv[0]);
@@ -101,17 +111,26 @@ int main(int argc, char *argv[])
    namedWindow(rawWindowName,WINDOW_AUTOSIZE);
    imshow(rawWindowName,theImage);
    Mat filtered;
-   Mat subtracted;   
+   Mat outPicture;   
    adaptiveThreshold(theImage,filtered,255,adaptiveMethod,threshType,blockSize,offset);
-   
-   if(do_subtract) 
-      subtract(theImage,filtered,subtracted);
-   else
-      subtracted=filtered;
+   if(doErode) {
+      Mat erodeK;   
+      erode(filtered,filtered,erodeK);
+   }
+   switch(doAction) {
+   case Add:
+      add(theImage,filtered,outPicture);
+      break;
+   case Subtract:
+      subtract(theImage,filtered,outPicture);
+      break;
+   default:      
+      outPicture=filtered;
+   }
    
    const char *filteredWindowName = "Filtered";
    namedWindow(filteredWindowName,WINDOW_AUTOSIZE);
-   imshow(filteredWindowName,subtracted);
+   imshow(filteredWindowName,outPicture);
    waitKey(0);
    destroyAllWindows();
    exit(0);

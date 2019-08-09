@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./ch10ex6 -i ../images/with_chair.jpg -b 3 -o 7 -s -v
+./ch10ex6 -i ../images/with_chair.jpg -b 5 -o 80 -v -a -e
