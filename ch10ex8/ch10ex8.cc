@@ -41,7 +41,7 @@ void usage(const char *pname)
 /* 
 Convert difference between two images into a mask
 */
-void doProcessing( Mat &imageOne, Mat &imageTwo, Mat &outputImage, double thresholdValue,int lothresh, int highthresh)
+void doProcessing( Mat &imageOne, Mat &imageTwo, Mat &outputImage, double thresholdValue,int lothresh, int highthresh,uchar passedV,bool verbose)
 {
    Mat eroded;
    Mat morphArray;
@@ -51,7 +51,7 @@ void doProcessing( Mat &imageOne, Mat &imageTwo, Mat &outputImage, double thresh
    erode(outputImage,eroded,morphArray);
    bitwise_xor(outputImage,eroded,outputImage);
    
-//   threshold(outputImage,outputImage,thresholdValue,255,THRESH_BINARY);
+   threshold(outputImage,outputImage,thresholdValue,255,THRESH_BINARY_INV);
 
    const char *checkWindowName="Check";
    namedWindow(checkWindowName,WINDOW_AUTOSIZE);
@@ -73,40 +73,42 @@ void doProcessing( Mat &imageOne, Mat &imageTwo, Mat &outputImage, double thresh
    for(irow=0; irow < outputImage.rows; ++irow) {
       for (icol=0;icol < outputImage.cols; ++icol) {
 	 pixValue=outputImage.at<uchar>(icol,irow);
-//	 cout << "pixValue: " << static_cast<int>(pixValue) << endl;
-	 if((255 == pixValue)) {
-//	    cout << "255 << 8: " << static_cast<int>(255 << 8) << endl;
+	 if((passedV == pixValue)) {
 	    seedPoint = Point(icol,irow);
-//	    cout << "Rows: " <<  outputImage.rows << " Cols: " << outputImage.cols << endl;
-	    cout << "seedPoint at " << seedPoint << " PrevPoint at: " << prevPoint << endl;	    
+	    if(verbose)
+	       cout << "seedPoint at " << seedPoint << " PrevPoint at: " << prevPoint << endl;	    
 	    filledPixelCount = floodFill(outputImage,seedPoint,Scalar(100,100,100),0,
-					 Scalar(lothresh),
-					 Scalar(highthresh),flagval);
-	    cout << "filledPixelCount: " << filledPixelCount << endl;
+					 Scalar(lothresh,lothresh,lothresh),
+					 Scalar(highthresh,highthresh,highthresh),flagval);
+	    if(verbose)
+	       cout << "filledPixelCount: " << filledPixelCount << endl;
 	    if((largestPC < filledPixelCount)) {
-	       cout << "largestPC: " <<  largestPC << " filledPixelCount: " << filledPixelCount << endl;
+	       if(verbose)
+		  cout << "largestPC: " <<  largestPC << " filledPixelCount: " << filledPixelCount << endl;
 	       if(0 != largestPC)
-		  floodFill(outputImage,prevPoint,Scalar(0,0,0),0,Scalar(lothresh),
-			    Scalar(highthresh),flagval);
+		  floodFill(outputImage,prevPoint,Scalar(100,100,100),0,Scalar(lothresh,lothresh,lothresh),
+			    Scalar(highthresh,highthresh,highthresh),flagval);
 	       prevPoint=seedPoint;
 	       largestPC = filledPixelCount;
 	    }
 	    else  {
 	       int fpc;
-	       fpc = floodFill(outputImage,seedPoint,Scalar(0,0,0),0,Scalar(lothresh),
-			 Scalar(highthresh),flagval);
-	       cout << "Floodfill: " << seedPoint <<  " pixelcount: " << fpc << endl;
+	       fpc = floodFill(outputImage,seedPoint,Scalar(100,100,100),0,Scalar(lothresh,lothresh,lothresh),
+			       Scalar(highthresh,highthresh,highthresh),flagval);
+	       if(verbose)
+		  cout << "Floodfill: " << seedPoint <<  " pixelcount: " << fpc << endl;
 	    }
 	 }
       }
    }
-   cout << "Largest filled region: " << largestPC << " Largest Point: " << seedPoint << endl;
+   if(verbose)
+      cout << "Largest filled region: " << largestPC << " Largest Point: " << seedPoint << endl;
    
 }
 
 int main(int argc, char *argv[])
 {
-   const char *optString="1:2:t:l:h:";
+   const char *optString="1:2:t:l:h:p:v";
    char opt;
    
    char *img1FN=0;
@@ -115,6 +117,8 @@ int main(int argc, char *argv[])
    istringstream threshConverter;
    int lothresh=0;
    int highthresh=0;
+   uchar pixelV = 255;
+   bool verbose = false;
    
    while((opt = getopt(argc,argv,optString)) != -1) {
       switch(opt) {
@@ -135,6 +139,13 @@ int main(int argc, char *argv[])
       case 'h':
 	 threshConverter.str(optarg);
 	 threshConverter >> lothresh;
+	 break;
+      case 'p':
+	 threshConverter.str(optarg);
+	 threshConverter >> pixelV;
+	 break;
+      case 'v':
+	 verbose=true;
 	 break;
       default:
 	 usage(argv[0]);
@@ -160,14 +171,14 @@ int main(int argc, char *argv[])
       exit(1);
    }
    Mat maskImage;
-   
+   /*  
    if(lothresh > highthresh) {
       cout << "Low threshold cannot be larger than high threshold." << endl;
       usage(argv[0]);
       exit(1);
    }
-   
-   doProcessing(imageFirst,imageTwost,maskImage,threshVal,lothresh,highthresh);
+   */
+   doProcessing(imageFirst,imageTwost,maskImage,threshVal,lothresh,highthresh,pixelV,verbose);
    char c=0;
    const char *windowName="Mask";
    namedWindow(windowName,WINDOW_AUTOSIZE);
