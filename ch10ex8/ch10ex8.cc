@@ -51,19 +51,20 @@ void doProcessing( Mat &imageOne, Mat &imageTwo, Mat &outputImage, double thresh
    erode(outputImage,eroded,morphArray);
    bitwise_xor(outputImage,eroded,outputImage);
    
-   threshold(outputImage,outputImage,thresholdValue,255,THRESH_BINARY_INV);
+   threshold(outputImage,outputImage,thresholdValue,255,THRESH_BINARY);
 
    const char *checkWindowName="Check";
    namedWindow(checkWindowName,WINDOW_AUTOSIZE);
    imshow(checkWindowName,outputImage);
    imwrite("./testimage.jpg",outputImage);
 
-   Point prevPoint(0,0);
+   Point largestPoint(0,0);
    Point seedPoint(0,0);
    int irow;
    int icol;
    uchar pixValue=0;
    int filledPixelCount = 0;
+   int lastPixelCount = 0;
    int largestPC = 0;
    // int flagval=4+65280+FLOODFILL_FIXED_RANGE;
    // int flagval = 4 | (255 < 8 ) | FLOODFILL_FIXED_RANGE;
@@ -76,7 +77,7 @@ void doProcessing( Mat &imageOne, Mat &imageTwo, Mat &outputImage, double thresh
 	 if((passedV == pixValue)) {
 	    seedPoint = Point(icol,irow);
 	    if(verbose)
-	       cout << "seedPoint at " << seedPoint << " PrevPoint at: " << prevPoint << endl;	    
+	       cout << "seedPoint at " << seedPoint << " PrevPoint at: " << largestPoint << endl;	    
 	    filledPixelCount = floodFill(outputImage,seedPoint,Scalar(100,100,100),0,
 					 Scalar(lothresh,lothresh,lothresh),
 					 Scalar(highthresh,highthresh,highthresh),flagval);
@@ -86,23 +87,24 @@ void doProcessing( Mat &imageOne, Mat &imageTwo, Mat &outputImage, double thresh
 	       if(verbose)
 		  cout << "largestPC: " <<  largestPC << " filledPixelCount: " << filledPixelCount << endl;
 	       if(0 != largestPC)
-		  floodFill(outputImage,prevPoint,Scalar(100,100,100),0,Scalar(lothresh,lothresh,lothresh),
+		  floodFill(outputImage,largestPoint,Scalar(0,0,0),0,Scalar(lothresh,lothresh,lothresh),
 			    Scalar(highthresh,highthresh,highthresh),flagval);
-	       prevPoint=seedPoint;
+	       largestPoint=seedPoint;
 	       largestPC = filledPixelCount;
 	    }
 	    else  {
 	       int fpc;
-	       fpc = floodFill(outputImage,seedPoint,Scalar(100,100,100),0,Scalar(lothresh,lothresh,lothresh),
+	       fpc = floodFill(outputImage,seedPoint,Scalar(0,0,0),0,Scalar(lothresh,lothresh,lothresh),
 			       Scalar(highthresh,highthresh,highthresh),flagval);
 	       if(verbose)
 		  cout << "Floodfill: " << seedPoint <<  " pixelcount: " << fpc << endl;
 	    }
 	 }
       }
+      lastPixelCount = floodFill(outputImage,largestPoint,Scalar(0,0,0),0,Scalar(99,99,99),Scalar(101,101,101),flagval);
    }
    if(verbose)
-      cout << "Largest filled region: " << largestPC << " Largest Point: " << seedPoint << endl;
+      cout << "Largest filled region: " << largestPC << " Largest Point: " << largestPoint << " lastPixelCount: " << lastPixelCount << endl;
    
 }
 
