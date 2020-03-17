@@ -30,8 +30,10 @@ using namespace cv;
 
 void usage(const char *pname)
 {
-   cout << "Usage: " << pname << "-i imagename" << endl;
+   cout << "Usage: " << pname << "-i imagename [-t {r|e|c} [-s {kernelsize} " << endl;
    cout << "Load greyscale image and play with Tophat." << endl;
+   cout << "imagename is the image; -t gives the kernel shape ( r=MORPH_RECT,e=MORPH_ELLIPSE,c=MORPH_CROSS,default is MORPH_RECT)" << endl;
+   cout << "kernelsize is an odd integer; default is 9" << endl;
 }
 
 int getKshape(const char *kshapeT) {
