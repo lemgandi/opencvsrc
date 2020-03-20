@@ -1,0 +1,11 @@
+# CMake Control File
+cmake_minimum_required( VERSION 2.8 )
+project( ch10ex13 )
+set(CMAKE_PREFIX_PATH "../../compiled/" FORCE)
+find_package ( OpenCV 3.4 REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} ../include )
+cmake_policy(SET CMP0015 NEW)
+link_directories(../lib)
+#  add_library(utility STATIC IMPORTED)
+add_executable( ch10ex13 ch10ex13.cc )
+target_link_libraries( ch10ex13 ${OpenCV_LIBS} libutility.a )
