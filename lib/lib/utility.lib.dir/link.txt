@@ -1,2 +1,0 @@
-/usr/bin/ar cr lib../lib/utility.lib.a  CMakeFiles/../lib/utility.lib.dir/imageWindow.cc.o CMakeFiles/../lib/utility.lib.dir/utility.cc.o
-/usr/bin/ranlib lib../lib/utility.lib.a
