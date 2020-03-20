@@ -1,0 +1,2 @@
+/usr/bin/ar cr libutility.a  CMakeFiles/utility.dir/imageWindow.cc.o CMakeFiles/utility.dir/utility.cc.o
+/usr/bin/ranlib libutility.a
