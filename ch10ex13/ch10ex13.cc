@@ -40,7 +40,7 @@ Usage Message
 void usage(const char *pname)
 {
    cout << "Usage: " << pname << " -i infile [-m maximum] [-t threshold] [-a]" << endl;
-   cout << "Show image threshold transformations. maximum is the highest value, threshold is thre threshold value." << endl;
+   cout << "Show image threshold transformations. maximum is the highest value, threshold is the threshold value." << endl;
    cout << "The a switch converts to adaptive threshold; for this, the threshold argument becores the weighting constant" << endl;
    cout << "It seems to have good results at if maximum =~ 25" << endl;
    
